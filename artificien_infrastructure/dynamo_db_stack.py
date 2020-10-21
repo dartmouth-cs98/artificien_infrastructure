@@ -1,6 +1,6 @@
 from aws_cdk import (
-    aws_iam as iam,
-    core
+    core as cdk,
+    aws_iam as iam
 )
 from aws_cdk.aws_dynamodb import (
     Table,
@@ -10,9 +10,9 @@ from aws_cdk.aws_dynamodb import (
 )
 
 
-class DynamoDBStack(core.Stack):
+class DynamoDBStack(cdk.Stack):
 
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         """ Deploy the DynamoDB Database and Sample Table """
         super().__init__(scope, id, **kwargs)
 
@@ -26,7 +26,7 @@ class DynamoDBStack(core.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=core.RemovalPolicy.DESTROY  # Change this policy for deployment to production to RETAIN
+            removal_policy=cdk.RemovalPolicy.DESTROY  # Change this policy for deployment to production to RETAIN
             # to prevent accidental deletes
         )
 
@@ -35,6 +35,10 @@ class DynamoDBStack(core.Stack):
             iam.AccountRootPrincipal()
         )
 
+        # db_role = iam.Role(self, 'artificienDbRole',
+        #                    assumed_by=iam.ServicePrincipal('amplify.amazonaws.com'),
+        #                    description='A role that allows the amplify website to access Dynamo')
+
         # Create a db user, which will be used for read and write ops only (no Admin permissions)
         db_user = iam.User(self, 'artificienDbUser', user_name='db_user')
         access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=db_user.user_name)
@@ -42,6 +46,9 @@ class DynamoDBStack(core.Stack):
             db_user
         )
 
+
+
         # Output db user credentials
-        core.CfnOutput(self, 'accessKeyId', value=access_key.ref)
-        core.CfnOutput(self, 'secretAccessKey', value=access_key.attr_secret_access_key)
+        cdk.CfnOutput(self, 'accessKeyId', value=access_key.ref)
+        cdk.CfnOutput(self, 'secretAccessKey', value=access_key.attr_secret_access_key)
+

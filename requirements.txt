@@ -1,5 +1,6 @@
 aws-cdk.aws-lambda
 aws-cdk.aws-dynamodb
+aws-cdk.aws-amplify
 aws-cdk.cdk
 pytest
 boto3
