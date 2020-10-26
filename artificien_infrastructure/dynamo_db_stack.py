@@ -13,7 +13,7 @@ from aws_cdk.aws_dynamodb import (
 class DynamoDBStack(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
-        """ Deploy the DynamoDB Database and Sample Table """
+        """ Deploy the DynamoDB Database and Data Tables """
         super().__init__(scope, id, **kwargs)
 
         # Table Names
@@ -44,7 +44,7 @@ class DynamoDBStack(cdk.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=core.RemovalPolicy.DESTROY  
+            removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
         self.app_table = Table(
@@ -55,7 +55,7 @@ class DynamoDBStack(cdk.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=core.RemovalPolicy.DESTROY  
+            removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
         self.model_table = Table(
@@ -66,7 +66,7 @@ class DynamoDBStack(cdk.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=core.RemovalPolicy.DESTROY  
+            removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
         self.dataset_table = Table(
@@ -77,9 +77,8 @@ class DynamoDBStack(cdk.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=core.RemovalPolicy.DESTROY  
+            removal_policy=cdk.RemovalPolicy.DESTROY
         )
-
 
         # Grant Full Access to the Principal AWS Account User:
         self.enterprise_table.grant_full_access(
@@ -104,8 +103,7 @@ class DynamoDBStack(cdk.Stack):
 
         # Create a db user, which will be used for read and write ops only (no Admin permissions)
         db_user = iam.User(self, 'artificienDbUser', user_name='db_user')
-        access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=db_user.user_name)
-        
+
         self.enterprise_table.grant_read_write_data(
             db_user
         )
@@ -122,9 +120,8 @@ class DynamoDBStack(cdk.Stack):
             db_user
         )
 
-
-
         # Output db user credentials
+        access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=db_user.user_name)
         cdk.CfnOutput(self, 'accessKeyId', value=access_key.ref)
         cdk.CfnOutput(self, 'secretAccessKey', value=access_key.attr_secret_access_key)
 
