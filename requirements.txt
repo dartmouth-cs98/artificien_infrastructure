@@ -1,8 +1,10 @@
 aws-cdk.aws-lambda
 aws-cdk.aws-dynamodb
+aws-cdk.aws-amplify
+aws-cdk.aws-cognito
 aws-cdk.cdk
 pytest
 boto3
 
-pip~=20.2.4
-setuptools~=41.2.0
+pip
+setuptools

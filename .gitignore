@@ -1,3 +1,4 @@
+.idea
 *.swp
 package-lock.json
 .pytest_cache
