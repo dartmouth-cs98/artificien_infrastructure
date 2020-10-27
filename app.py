@@ -18,6 +18,6 @@ amplify_stack = AmplifyStack(app, 'amplify', env={'region': 'us-east-1'})
 jupyter_stack = JupyterServiceStack(app, 'jupyter', env={'region': 'us-east-1'})
 
 # Launch Cognito to conduct authentication to the website
-cognito_stack = CognitoStack(app, 'cognito', env={'region': 'us-east-1'})
+cognito_stack = CognitoStack(app, 'cognito', jupyter_domains=jupyter_stack.domains, env={'region': 'us-east-1'})
 
 app.synth()

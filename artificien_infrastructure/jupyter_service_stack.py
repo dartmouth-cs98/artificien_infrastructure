@@ -9,6 +9,10 @@ class JupyterServiceStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        self.domains = {'callback_url': 'https://jupyter.artificien.com/hub/oauth_callback',
+                        'signout_url': 'https://jupyter.artificien.com',
+                        'auth_domain_name': 'artificien'}
+
         jupyter_ec2 = True
         vpc = ec2.Vpc(self,
                       "VPC",

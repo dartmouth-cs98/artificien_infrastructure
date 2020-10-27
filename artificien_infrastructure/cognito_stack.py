@@ -5,6 +5,9 @@ import aws_cdk.aws_iam as iam
 from aws_cdk.aws_cognito import (
     UserPool,
     UserPoolClient,
+    UserPoolDomain,
+    OAuthSettings,
+    CognitoDomainOptions,
     CfnIdentityPool,
     CfnIdentityPoolRoleAttachment,
     UserVerificationConfig,
@@ -13,14 +16,13 @@ from aws_cdk.aws_cognito import (
     StandardAttribute,
     PasswordPolicy,
     AccountRecovery,
-    AutoVerifiedAttrs,
-    UserPoolTriggers
+    AutoVerifiedAttrs
 )
 
 
 class CognitoStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, jupyter_domains: dict, **kwargs) -> None:
         """ Deploy the DynamoDB Database and Sample Table """
         super().__init__(scope, id, **kwargs)
 
@@ -81,7 +83,27 @@ class CognitoStack(cdk.Stack):
             user_pool=self.user_pool
         )
 
-        # Create an identity pool with one Native app client and one Web app client
+        # Create a client which will be attached to the jupyter deployment to log users in to Jupyter
+        # By using the same Cognito User Pool to login to both the website and JupyterHub, we ensure that
+        # our users only need to log in once at the website homepage, and are auto-logged-in to JupyterHub
+        self.user_pool_client_jupyter = self.user_pool.add_client(
+            id='UserPoolClientJupyter',
+            user_pool_client_name='artificienUserPoolJupyterClient',
+            generate_secret=True,
+            o_auth=OAuthSettings(
+                callback_urls=[jupyter_domains['callback_url']],
+                logout_urls=[jupyter_domains['signout_url']]
+            )
+        )
+
+        self.user_pool_domain = UserPoolDomain(
+            self,
+            'artificienCognitoDomain',
+            cognito_domain=CognitoDomainOptions(domain_prefix=jupyter_domains['auth_domain_name']),
+            user_pool=self.user_pool,
+        )
+
+        # Create an identity pool with one Native app client one Web app client, and one client for Jupyter
         self.identity_pool = CfnIdentityPool(
             self,
             "IdentityPool",
@@ -95,9 +117,12 @@ class CognitoStack(cdk.Stack):
                 CfnIdentityPool.CognitoIdentityProviderProperty(
                     client_id=self.user_pool_client_native.user_pool_client_id,
                     provider_name=self.user_pool.user_pool_provider_name,
+                ),
+                CfnIdentityPool.CognitoIdentityProviderProperty(
+                    client_id=self.user_pool_client_jupyter.user_pool_client_id,
+                    provider_name=self.user_pool.user_pool_provider_name
                 )
             ],
-
         )
 
         # Create an authenticated role to authenticate through the Native client
@@ -151,20 +176,3 @@ class CognitoStack(cdk.Stack):
                 'unauthenticated': unauth_role.role_arn
             }
         )
-
-        # Output names of user pool, user pool clients, and identity pool
-        cdk.CfnOutput(self,
-                      'UserPoolId',
-                      value=self.user_pool.user_pool_id)
-
-        cdk.CfnOutput(self,
-                      'UserPoolWebClientId',
-                      value=self.user_pool_client_web.user_pool_client_id)
-
-        cdk.CfnOutput(self,
-                      'UserPoolNativeClientId',
-                      value=self.user_pool_client_native.user_pool_client_id)
-
-        cdk.CfnOutput(self,
-                      'IdentityPoolId',
-                      value=self.identity_pool.ref)
