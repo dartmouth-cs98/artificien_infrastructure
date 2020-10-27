@@ -35,7 +35,7 @@ def update_enterprise_table(ID = "", num_models = 0, enterprise_account_email = 
 
     # The BatchWriteItem API allows us to write multiple items to a table in one request.
     with table.batch_writer() as batch:
-        batch.put_item(Item={"enterprise": str(ID),
+        batch.put_item(Item={"enterprise_id": str(ID),
                             'num_models': int(num_models),
                             'enterprise_account_email': str(enterprise_account_email),
                             'num_users': int(num_users),
@@ -52,7 +52,7 @@ def update_enterprise_table(ID = "", num_models = 0, enterprise_account_email = 
     # -----[name]:S
     # -----[enterprise]:M
     # -----[models]<<:M
-    # -----[bank_info]<<
+    # -----[bank_info]<<{bank_number: N, bank: S}
     # ---------------------------------
 
 
@@ -74,17 +74,19 @@ def update_user_table(ID = "", is_developer = False, user_account_email = "", na
                                 'bank': str(bank) # no idea what this should look like tbh
                             }
                        })
+    print("Done")
     
 # --------------------------------------------APP-----------------------------------------------
 
     # ----------App-------------
-    # PK------[app_id]
+    # PK------[app_id]:S
     # ---------------------------------
     # -----[dataset]:M
     # -----[grid]:M
+    # -----[logo_image_url]:S
     # ---------------------------------
 
-def update_app_table(ID = "", dataset = "", grid = None):
+def update_app_table(ID = "", dataset = "", grid = None, logo_image_url = None):
 
     _, _, app_table_name, _, _, region_name = get_table_attributes()
     dynamodb = boto3.resource('dynamodb', region_name=region_name)
@@ -94,21 +96,24 @@ def update_app_table(ID = "", dataset = "", grid = None):
     with table.batch_writer() as batch:
        batch.put_item(Item={"app_id": str(ID),
                             'dataset': str(dataset),
-                            'grid': grid
+                            'grid': grid,
+                            'logo_image_url': str(logo_image_url),
                        })
 
 # --------------------------------------------MODEL-----------------------------------------------
 
     # ----------MODEL-------------
-    # PK------[model_id]
+    # --------- P Index -------------
+    # PK------[model_id]:S
+    # --------- S Index -------------
+    # PK ---[owner]:S
+    # SK---[active_status]:N
     # ---------------------------------
-    # -----[active_status]:BOOL
-    # -----[owner]:M
     # -----[date_submitted]:S YYYYMMDD ISO _8601
     # ---------------------------------
 
 
-def update_model_table(ID = "", active_status = True, owner = None, date_submitted = datetime.datetime.today().strftime('%Y%m%d')):
+def update_model_table(ID = "", active_status = 1, owner = None, date_submitted = datetime.datetime.today().strftime('%Y%m%d')):
     _, _, _, model_table_name, _, region_name = get_table_attributes()
     dynamodb = boto3.resource('dynamodb', region_name=region_name)
     table = dynamodb.Table(model_table_name)
@@ -118,20 +123,23 @@ def update_model_table(ID = "", active_status = True, owner = None, date_submitt
        batch.put_item(Item={"model_id": str(ID),
                             "active_status": active_status,
                             "owner": str(owner),
-                            date_submitted: date_submitted
+                            "date_submitted": date_submitted
                        })
 
 
 # --------------------------------------------DATASET---------------------------------------------
 
     # ----------DATASET-------------
+    # ------------P Index--------------
     # PK------[dataset_id]
+    # ------------S Index--------------
+    # PK------[category]:S
+    # SK------[num_devices]:N
     # ---------------------------------
     # -----[app]:M
     #------[name]:S
     # -----[logo_image_url]:S
-    # -----[category]:S
-    # -----[num_devices]:N
+
     # ---------------------------------
 
 
@@ -160,7 +168,6 @@ def test_queryable(ent_pk = None, usr_pk = None, app_pk = None, mdl_pk = None, d
     arguments = [ent_pk, usr_pk, app_pk, mdl_pk, data_pk]
     print(arguments)
 
-
     enterprise_table_name, user_table_name, app_table_name, model_table_name, dataset_table_name, region_name = get_table_attributes()
 
     # Attempt GET
@@ -181,7 +188,7 @@ def test_queryable(ent_pk = None, usr_pk = None, app_pk = None, mdl_pk = None, d
         response = None
 
         if table_names[i] == enterprise_table_name and ent_pk:
-            response = table.get_item(Key={"enterprise": str(ent_pk)})
+            response = table.get_item(Key={"enterprise_id": str(ent_pk)})
 
         elif table_names[i] == user_table_name and usr_pk:
             response = table.get_item(Key={"user_id": str(usr_pk)})
@@ -190,10 +197,10 @@ def test_queryable(ent_pk = None, usr_pk = None, app_pk = None, mdl_pk = None, d
             response = table.get_item(Key={"app_id": str(app_pk)})
 
         elif table_names[i] == model_table_name and mdl_pk:
-            response = table.get_item(Key={"model_id": str(mdl_pk)})
+            response = table.get_item(Key={"model_id": str(mdl_pk[0]), "active_status": mdl_pk[1]})
 
         elif table_names[i] == dataset_table_name and data_pk:
-            response = table.get_item(Key={"dataset_id": str(data_pk)})
+            response = table.get_item(Key={"dataset_id": str(data_pk[0]), "num_devices": data_pk[1]})
         
         try:
             print(response)
@@ -212,7 +219,9 @@ def test_queryable(ent_pk = None, usr_pk = None, app_pk = None, mdl_pk = None, d
     else:
         print("\n------------SUCCESS ALL------------\n")
 
-    
 
 if __name__ == '__main__':
-    test_queryable("_", "mKenney", "bababooey")
+    update_enterprise_table(ID = "fakeEnt", num_models = 2, enterprise_account_email = "fakeEnt@gmail.com", num_users = 1, users = None)
+    update_model_table(ID = "model1", active_status = 1, owner = "QUILL", date_submitted = datetime.datetime.today().strftime('%Y%m%d'))
+    test_queryable("fakeEnt", "QUILL", "_", "modelOne")
+    # update_user_table(ID = "Shreyas", is_developer = True, user_account_email = "shreyas.shreyas@gmail.com", name = "Shreyas", enterprise = "Bain", bank_number = 1492, bank = "Bank of New York")
