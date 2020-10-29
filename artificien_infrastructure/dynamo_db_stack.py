@@ -6,7 +6,8 @@ from aws_cdk.aws_dynamodb import (
     Table,
     Attribute,
     AttributeType,
-    BillingMode
+    BillingMode,
+    GlobalSecondaryIndexProps
 )
 
 
@@ -80,48 +81,38 @@ class DynamoDBStack(cdk.Stack):
             removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
-        # Grant Full Access to the Principal AWS Account User:
-        self.enterprise_table.grant_full_access(
-            iam.AccountRootPrincipal()
-        )
-        self.user_table.grant_full_access(
-            iam.AccountRootPrincipal()
-        )
-        self.app_table.grant_full_access(
-            iam.AccountRootPrincipal()
-        )
-        self.dataset_table.grant_full_access(
-            iam.AccountRootPrincipal()
-        )
-        self.model_table.grant_full_access(
-            iam.AccountRootPrincipal()
+        # Add Global Secondary Indices for Select Tables
+        self.dataset_table.add_global_secondary_index(
+            partition_key=Attribute(
+                name='category',
+                type=AttributeType.STRING
+            ),
+            sort_key=Attribute(
+                name='num_devices',
+                type=AttributeType.NUMBER
+            ),
+            index_name='category-num_devices-index'
         )
 
-        # db_role = iam.Role(self, 'artificienDbRole',
-        #                    assumed_by=iam.ServicePrincipal('amplify.amazonaws.com'),
-        #                    description='A role that allows the amplify website to access Dynamo')
+        self.model_table.add_global_secondary_index(
+            partition_key=Attribute(
+                name='owner_name',
+                type=AttributeType.STRING
+            ),
+            sort_key=Attribute(
+                name='active_status',
+                type=AttributeType.NUMBER
+            ),
+            index_name='owner_name-active_status-index'
+        )
 
-        # Create a db user, which will be used for read and write ops only (no Admin permissions)
+        # Create a db user, which will be used to access dynamodb
         db_user = iam.User(self, 'artificienDbUser', user_name='db_user')
-
-        self.enterprise_table.grant_read_write_data(
-            db_user
-        )
-        self.user_table.grant_read_write_data(
-            db_user
-        )
-        self.app_table.grant_read_write_data(
-            db_user
-        )
-        self.model_table.grant_read_write_data(
-            db_user
-        )
-        self.dataset_table.grant_read_write_data(
-            db_user
+        db_user.add_managed_policy(
+            policy=iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess')
         )
 
         # Output db user credentials
         access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=db_user.user_name)
         cdk.CfnOutput(self, 'accessKeyId', value=access_key.ref)
         cdk.CfnOutput(self, 'secretAccessKey', value=access_key.attr_secret_access_key)
-
