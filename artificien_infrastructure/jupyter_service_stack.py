@@ -91,5 +91,11 @@ class JupyterServiceStack(core.Stack):
                 "yes | pip install syft[udacity]",
             )
 
+    import sys
+    from godaddypy import Client, Account
+
+    my_acct = Account(api_key='dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg', api_secret='59ruhpKYtfr4x81RTRXybQ')
+    client = Client(my_acct)
+    client.update_record_ip('3.80.35.170', 'artificien.com', 'jupyter', 'A')
 
 
