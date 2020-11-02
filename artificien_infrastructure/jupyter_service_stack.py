@@ -11,7 +11,8 @@ class JupyterServiceStack(core.Stack):
 
         self.domains = {'callback_url': 'https://jupyter.artificien.com/hub/oauth_callback',
                         'signout_url': 'https://jupyter.artificien.com',
-                        'auth_domain_name': 'artificien'}
+                        'auth_domain_name': 'artificien',
+                        'auth_domain_url': 'https://artificien.auth.us-east-1.amazoncognito.com'}
 
         jupyter_ec2 = True
         vpc = ec2.Vpc(self,
@@ -50,25 +51,51 @@ class JupyterServiceStack(core.Stack):
             jupyter_userdata.add_commands(
                 # install littlest jupyter hub
                 "curl -L https://tljh.jupyter.org/bootstrap.py | python3 - --admin artificien",
+                # Setup systemd environment variable overrides
+                "mkdir /etc/systemd/system/jupyterhub.service.d",
+
+                "echo [Service]" + "\n" + 
+                "Environment=AWSCOGNITO_DOMAIN=" + str(self.domains['auth_domain_url']) + " >> /etc/systemd/system/jupyterhub.service.d/jupyterhub.conf",
+
+                # Need to ensure oauthenticator is bumped to 0.10.0
+                "curl -L https://tljh.jupyter.org/bootstrap.py | sudo python3 - --admin insightadmin",
+
+                # Setup aws Cognito Authenticator
+                "echo c.AWSCognitoAuthenticator.client_id='21lr2baklenmspuqrieju98o8s' >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo \"\" >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo c.AWSCognitoAuthenticator.client_secret='ggt3g2itnto3nedah10rpj8d424g6tfchp4kk1funmqn8jf4d92' >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo \"\" >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo c.AWSCognitoAuthenticator.oauth_callback_url='" + str(self.domains['callback_url']) + "' >> /opt/tljh/config/jupyterhub_config/awscognito.py",
+                "echo \"\" >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo c.AWSCognitoAuthenticator.username_key='username' >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo \"\" >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+                "echo c.AWSCognitoAuthenticator.oauth_logout_redirect_url='" + str(self.domains['signout_url']) + "' >> /opt/tljh/config/jupyterhub_config.d/awscognito.py",
+
+                "tljh-config set auth.type oauthenticator.awscognito.AWSCognitoAuthenticator",
+                "tljh-config reload",
+
                 # configure https to jupyter.artificien.com
-                "tljh-config set https.enabled true"
-                "tljh-config set https.letsencrypt.email epsteinj.us@gmail.com"
-                "tljh-config add-item https.letsencrypt.domains jupyter.artificien.com"
-                "tljh-config add-item https.letsencrypt.domains www.jupyter.artificien.com"
-                "tljh-config reload proxy"
+                "tljh-config set https.enabled true",
+                "tljh-config set https.letsencrypt.email epsteinj.us@gmail.com",
+                "tljh-config add-item https.letsencrypt.domains jupyter.artificien.com",
+                "tljh-config add-item https.letsencrypt.domains www.jupyter.artificien.com",
+                "tljh-config reload proxy",
                 # configure with preinstalled packages
-                "source /opt/tljh/user/bin/activate"
-                "export PATH=/opt/tljh/user/bin:${PATH}"
-                "chown -R ubuntu /opt/tljh/user"
-                "chmod -R +x /opt/tljh/user"
-                "conda install -y python=3.7"
-                "conda install -y numpy"
-                "conda install -y pandas"
-                "yes | pip install syft[udacity]"
+                "source /opt/tljh/user/bin/activate",
+                "export PATH=/opt/tljh/user/bin:${PATH}",
+                "chown -R ubuntu /opt/tljh/user",
+                "chmod -R +x /opt/tljh/user",
+                "conda install -y python=3.7",
+                "conda install -y numpy",
+                "conda install -y pandas",
+                "yes | pip install syft[udacity]",
             )
 
-            jupyter_userdata.add_signal_on_exit_command(resource=jupyter_instance)
+    import sys
+    from godaddypy import Client, Account
 
-        # jupyter_instance.instance.cfn_options.creation_policy = core.CfnCreationPolicy(
-        #     resource_signal=core.CfnResourceSignal(count=1, timeout="PT20M")
-        # )
+    my_acct = Account(api_key='dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg', api_secret='59ruhpKYtfr4x81RTRXybQ')
+    client = Client(my_acct)
+    client.update_record_ip('3.80.35.170', 'artificien.com', 'jupyter', 'A')
+
+
