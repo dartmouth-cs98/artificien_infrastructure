@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from aws_cdk import core as cdk
 
-from artificien_infrastructure.dynamo_db_stack import DynamoDBStack
-from artificien_infrastructure.amplify_stack import AmplifyStack
-from artificien_infrastructure.cognito_stack import CognitoStack
-from artificien_infrastructure.jupyter_service_stack import JupyterServiceStack
-from artificien_infrastructure.pygrid_node_stack import PygridNodeStack
+from cdk_stacks.dynamo_db_stack import DynamoDBStack
+from cdk_stacks.amplify_stack import AmplifyStack
+from cdk_stacks.cognito_stack import CognitoStack
+from cdk_stacks.jupyter_service_stack import JupyterServiceStack
+from cdk_stacks.pygrid_node_stack import PygridNodeStack
 
 app = cdk.App()
 
