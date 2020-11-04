@@ -7,11 +7,11 @@ aws-cdk.aws-dynamodb
 aws-cdk.aws-amplify
 aws-cdk.aws-cognito
 aws-cdk.cdk
-terrascript # pygrid node is deployed in terraform
-poetry
+godaddypy
 
-pytest
 boto3
+pytest
+godaddypy
 
 pip
 setuptools
