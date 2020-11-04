@@ -1,3 +1,5 @@
+import sys
+from godaddypy import Client, Account
 from aws_cdk import (
     aws_ec2 as ec2,
     core
@@ -15,16 +17,15 @@ class JupyterServiceStack(core.Stack):
                         'auth_domain_url': 'https://artificien.auth.us-east-1.amazoncognito.com'}
 
         jupyter_ec2 = True
-        vpc = ec2.Vpc(self,
-                      "VPC",
-                      subnet_configuration=[ec2.SubnetConfiguration(
-                          cidr_mask=24,
-                          name="Ingress",
-                          subnet_type=ec2.SubnetType.PUBLIC
-                      )]
-                      )
-        jupyter_security_group = ec2.SecurityGroup(self, "jupyter_security_group", allow_all_outbound=True, vpc=vpc)
+        vpc = ec2.Vpc(self, "VPC",
+            subnet_configuration=[ec2.SubnetConfiguration(
+                    cidr_mask=24,
+                    name="Ingress",
+                    subnet_type=ec2.SubnetType.PUBLIC
+                )]
+        )
 
+        jupyter_security_group = ec2.SecurityGroup(self, "jupyter_security_group", allow_all_outbound=True, vpc=vpc)
         jupyter_security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80))
         jupyter_security_group.add_ingress_rule(ec2.Peer.any_ipv6(), ec2.Port.tcp(80))
         jupyter_security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443))
@@ -34,7 +35,6 @@ class JupyterServiceStack(core.Stack):
 
         if jupyter_ec2:
             # create instance
-            # create userdata
             jupyter_userdata = ec2.UserData.for_linux(shebang="#!/bin/bash -xe")
             jupyter_instance = ec2.Instance(
                 self,
@@ -46,15 +46,20 @@ class JupyterServiceStack(core.Stack):
                 key_name="littlest-jupyter",
                 user_data=jupyter_userdata
             )
-            core.Tag.add(jupyter_instance, "Name", "Little Jupyter Service")
+            core.Tags.of(jupyter_instance).add('Name', 'Little Jupyter Service')
 
+            #TODO: The Cognito Client Secret and ID are hard coded here, as is the Jupyter URL.
+            #      We need to write code to replace these so they are determined automatically on deploy
+
+            # create userdata
             jupyter_userdata.add_commands(
                 # install littlest jupyter hub
                 "curl -L https://tljh.jupyter.org/bootstrap.py | python3 - --admin artificien",
+
                 # Setup systemd environment variable overrides
                 "mkdir /etc/systemd/system/jupyterhub.service.d",
 
-                "echo [Service]" + "\n" + 
+                "echo [Service]" + "\n" +
                 "Environment=AWSCOGNITO_DOMAIN=" + str(self.domains['auth_domain_url']) + " >> /etc/systemd/system/jupyterhub.service.d/jupyterhub.conf",
 
                 # Need to ensure oauthenticator is bumped to 0.10.0
@@ -80,6 +85,7 @@ class JupyterServiceStack(core.Stack):
                 "tljh-config add-item https.letsencrypt.domains jupyter.artificien.com",
                 "tljh-config add-item https.letsencrypt.domains www.jupyter.artificien.com",
                 "tljh-config reload proxy",
+
                 # configure with preinstalled packages
                 "source /opt/tljh/user/bin/activate",
                 "export PATH=/opt/tljh/user/bin:${PATH}",
@@ -91,11 +97,7 @@ class JupyterServiceStack(core.Stack):
                 "yes | pip install syft[udacity]",
             )
 
-    import sys
-    from godaddypy import Client, Account
-
-    my_acct = Account(api_key='dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg', api_secret='59ruhpKYtfr4x81RTRXybQ')
-    client = Client(my_acct)
-    client.update_record_ip('3.80.35.170', 'artificien.com', 'jupyter', 'A')
-
-
+            # Add new DNS A record to point to JupyterHub
+            my_acct = Account(api_key='dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg', api_secret='59ruhpKYtfr4x81RTRXybQ')
+            client = Client(my_acct)
+            client.update_record_ip('3.80.35.170', 'artificien.com', 'jupyter', 'A')

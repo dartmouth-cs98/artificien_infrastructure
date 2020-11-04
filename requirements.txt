@@ -1,11 +1,17 @@
 aws-cdk.aws-ec2
+aws-cdk.aws-ecs
+aws-cdk.aws-ecs-patterns
+aws-cdk.aws-logs
 aws-cdk.aws-lambda
 aws-cdk.aws-dynamodb
 aws-cdk.aws-amplify
 aws-cdk.aws-cognito
 aws-cdk.cdk
-pytest
+godaddypy
+
 boto3
+pytest
+godaddypy
 
 pip
 setuptools
