@@ -1,6 +1,6 @@
 import json
 from aws_cdk import core
-from artificien_infrastructure.dynamo_db_stack import DynamoDBStack
+from cdk_stacks.dynamo_db_stack import DynamoDBStack
 
 
 def get_template():

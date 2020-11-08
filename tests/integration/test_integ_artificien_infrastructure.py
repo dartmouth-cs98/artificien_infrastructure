@@ -2,7 +2,7 @@ import boto3
 import pprint
 from boto3.dynamodb.conditions import Key
 from aws_cdk import core
-from artificien_infrastructure.dynamo_db_stack import DynamoDBStack
+from cdk_stacks.dynamo_db_stack import DynamoDBStack
 
 
 def get_sample_table_attributes():
