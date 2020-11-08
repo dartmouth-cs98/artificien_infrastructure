@@ -20,7 +20,7 @@ This repo stores infrastructure and deployment code for the Artificien platform 
 - To deploy all resources
   - `cdk synth` - to create cloudformation templates
   - `cdk diff` - to see what changes will be made to our deployments
-  - `cdk deploy` - to deploy the DynamoDB Sample Table
+  - `cdk deploy` - to deploy new changes to **all** resources
 - To deploy just one resource:
   - `cdk deploy dynamo-db` or `cdk deploy amplify` or `cdk deploy jupyter` or `cdk deploy cognito` or `cdk deploy pygrid`
 - Test
