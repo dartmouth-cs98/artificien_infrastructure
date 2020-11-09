@@ -23,6 +23,8 @@ This repo stores infrastructure and deployment code for the Artificien platform 
   - `cdk deploy` - to deploy new changes to **all** resources
 - To deploy just one resource:
   - `cdk deploy dynamo-db` or `cdk deploy amplify` or `cdk deploy jupyter` or `cdk deploy cognito` or `cdk deploy pygrid`
+- Post Deploy: There are some actions that must be performed **after** cdk has finished deploying, either because the action involves a non-AWS resource, or because the action is not related to deployment itself but rather to the population of data or configuration of the resource once deployment is complete. Currently, the only post-deploy action we have is to point our GoDaddy DNS Record to the JupyterHub instance.
+  - Run post deploy actions after `cdk deploy` with `python post_deploy_actions.py`
 - Test
   - `pytest tests/unit` to run the unit tests (pre-deployment)
   - `pytest tests/integration` to populate the sample DynamoDB table with data and test that it's queryable (run this AFTER `cdk deploy`)
