@@ -38,7 +38,7 @@ class CognitoStack(cdk.Stack):
             self_sign_up_enabled=True,
             user_verification=UserVerificationConfig(
                 email_subject='Verify your email to use Artificien Services',
-                email_body='Hello {username}, Thanks for signing up to our app! Your verification code is {####}',
+                email_body='Thanks for signing up for our services! Your verification code is {####}'
             ),
             standard_attributes=StandardAttributes(
                 email=StandardAttribute(
