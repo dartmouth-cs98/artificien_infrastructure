@@ -17,12 +17,13 @@ This repo stores infrastructure and deployment code for the Artificien platform 
 
 - Enter top-level directory
 - Install python libraries: `pip install -r requirements.txt`
+- If you want to deploy all resources, or need to deploy one of the lambda functions, you may need to run `cdk bootstrap` first. Uploading code artifacts to AWS, a key step in deploying any lambda function, requires this command to have been run recently before a deployment.
 - To deploy all resources
   - `cdk synth` - to create cloudformation templates
   - `cdk diff` - to see what changes will be made to our deployments
   - `cdk deploy` - to deploy new changes to **all** resources
 - To deploy just one resource:
-  - `cdk deploy dynamo-db` or `cdk deploy amplify` or `cdk deploy jupyter` or `cdk deploy cognito` or `cdk deploy pygrid`
+  - `cdk deploy dynamo-db` or `cdk deploy amplify` or `cdk deploy jupyter` or `cdk deploy cognito` or `cdk deploy pygrid` or `cdk deploy dataUploadLambda`. Check the `app.py` file to find names of other stacks that we may add as we develop.
 - Post Deploy: There are some actions that must be performed **after** cdk has finished deploying, either because the action involves a non-AWS resource, or because the action is not related to deployment itself but rather to the population of data or configuration of the resource once deployment is complete. Currently, the only post-deploy action we have is to point our GoDaddy DNS Record to the JupyterHub instance.
   - Run post deploy actions after `cdk deploy` with `python post_deploy_actions.py`
 - Test
