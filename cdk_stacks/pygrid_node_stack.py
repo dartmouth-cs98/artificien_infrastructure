@@ -37,8 +37,8 @@ class PygridNodeStack(cdk.Stack):
                 container_name='pygrid_node',
                 container_port=5000,
                 image=ecs.ContainerImage.from_registry('openmined/grid-node:production'),
-                environment= {
-                    'NODE_ID' : 'node0',
+                environment={
+                    'NODE_ID': 'node0',
                     'ADDRESS': 'http://localhost:5000',
                     'PORT': '5000',
                     'DATABASE_URL': 'sqlite:///databasenode.db'

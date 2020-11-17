@@ -7,7 +7,7 @@ from aws_cdk.aws_dynamodb import (
     Attribute,
     AttributeType,
     BillingMode,
-    GlobalSecondaryIndexProps
+    StreamViewType
 )
 
 
@@ -78,7 +78,8 @@ class DynamoDBStack(cdk.Stack):
                 type=AttributeType.STRING
             ),
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=cdk.RemovalPolicy.DESTROY
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+            stream=StreamViewType.NEW_IMAGE
         )
 
         # Add Global Secondary Indices for Select Tables

@@ -93,6 +93,7 @@ class JupyterServiceStack(core.Stack):
                 ######################################
                 # configure with preinstalled packages
                 ######################################
+                "sudo apt install aws-cli"
                 "source /opt/tljh/user/bin/activate",
                 "export PATH=/opt/tljh/user/bin:${PATH}",
                 "chown -R ubuntu /opt/tljh/user",
@@ -107,6 +108,14 @@ class JupyterServiceStack(core.Stack):
                 ###################
                 "sudo tljh-config set user_environment.default_app jupyterlab",
                 "sudo tljh-config reload hub"
+
+                ###############
+                # Get Fake Data
+                ###############
+                "sudo mkdir -p /srv/data/sample_data"
+                # Download data HERE into /srv/data/sample_data (no code to download yet)
+                "cd /etc/skel",
+                "sudo ln -s /srv/data/sample_data sample_data"
             )
 
             # create instance
