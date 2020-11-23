@@ -108,12 +108,12 @@ class DynamoDBStack(cdk.Stack):
         )
 
         # Create a db user, which will be used to access dynamodb
-        db_user = iam.User(self, 'artificienDbUser', user_name='db_user')
-        db_user.add_managed_policy(
+        self.db_user = iam.User(self, 'artificienDbUser', user_name='db_user')
+        self.db_user.add_managed_policy(
             policy=iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess')
         )
 
         # Output db user credentials
-        access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=db_user.user_name)
+        access_key = iam.CfnAccessKey(self, 'AccessKey', user_name=self.db_user.user_name)
         cdk.CfnOutput(self, 'accessKeyId', value=access_key.ref)
         cdk.CfnOutput(self, 'secretAccessKey', value=access_key.attr_secret_access_key)

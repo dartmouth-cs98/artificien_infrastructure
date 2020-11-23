@@ -1,13 +1,13 @@
-
 from aws_cdk import (
     aws_ec2 as ec2,
-    core
+    aws_iam as iam,
+    core as cdk
 )
 
 
-class JupyterServiceStack(core.Stack):
+class JupyterServiceStack(cdk.Stack):
 
-    def __init__(self, scope: core.Construct,
+    def __init__(self, scope: cdk.Construct,
                  id: str,
                  jupyter_domains: dict,
                  jupyter_cognito_client_id: str,
@@ -130,6 +130,12 @@ class JupyterServiceStack(core.Stack):
                 key_name="littlest-jupyter",  # Use the Key in this repo to SSH into the machine
                 user_data=jupyter_userdata
             )
-            core.Tags.of(self.jupyter_instance).add('Name', 'Little Jupyter Service')  # Give instance a name
 
-            core.CfnOutput(self, 'JupyterIPv4', value=self.jupyter_instance.instance_public_ip)
+            # Give the instance role access to S3
+            self.jupyter_instance.role.add_managed_policy(
+                iam.ManagedPolicy.from_aws_managed_policy_name('AmazonS3FullAccess'))
+
+            # Give instance a name
+            cdk.Tags.of(self.jupyter_instance).add('Name', 'Little Jupyter Service')
+
+            cdk.CfnOutput(self, 'JupyterIPv4', value=self.jupyter_instance.instance_public_ip)

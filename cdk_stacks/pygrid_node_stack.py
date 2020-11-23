@@ -24,8 +24,8 @@ class PygridNodeStack(cdk.Stack):
             'PyGridService',
             # Resources
             cluster=self.cluster,
-            cpu=4096,
-            memory_limit_mib=8192,
+            cpu=512,
+            memory_limit_mib=2048,
             desired_count=1,
 
             # Load balancer config
@@ -33,7 +33,7 @@ class PygridNodeStack(cdk.Stack):
             listener_port=5000,
 
             # Task image options
-            task_image_options= ecs_patterns.NetworkLoadBalancedTaskImageOptions(
+            task_image_options=ecs_patterns.NetworkLoadBalancedTaskImageOptions(
                 container_name='pygrid_node',
                 container_port=5000,
                 image=ecs.ContainerImage.from_registry('openmined/grid-node:production'),
@@ -46,13 +46,15 @@ class PygridNodeStack(cdk.Stack):
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(
                     stream_prefix='PyGridNode',
-                    log_group=logs.LogGroup(self, 'PyGridLogGroup',
+                    log_group=logs.LogGroup(
+                        self, 'PyGridLogGroup',
                         removal_policy=cdk.RemovalPolicy.DESTROY,
                         retention=logs.RetentionDays.ONE_MONTH
                     )
                 )
             ),
-            load_balancer=load_balancer.NetworkLoadBalancer(self, 'PyGridLoadBalancer',
+            load_balancer=load_balancer.NetworkLoadBalancer(
+                self, 'PyGridLoadBalancer',
                 vpc=self.vpc,
                 internet_facing=True,
                 cross_zone_enabled=True
