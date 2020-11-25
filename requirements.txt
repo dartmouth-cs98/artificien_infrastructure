@@ -109,8 +109,6 @@ typing-extensions==3.7.4.3
 urllib3==1.25.11
 virtualenv==20.1.0
 webencodings==0.5.1
-syft==0.3.0
 
-efsync==1.0.0
 Flask~=1.1.2
 setuptools~=50.3.0.post20201006
