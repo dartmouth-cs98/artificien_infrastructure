@@ -1,6 +1,8 @@
 import sys
 import json
 import logging
+import requests
+import boto3
 efs_mount = '/mnt/python/'
 sys.path.append(efs_mount)  # import dependencies installed in EFS (can ONLY import EFS packages AFTER this step)
 # import syft as sy
@@ -49,6 +51,60 @@ def test():
         'headers': {},
         'body': json.dumps({'message': "You've successfully invoked the test method"})
     }
+
+def retrieve(event):
+    
+    # 1. parse out the event values
+    query_string_parameters = event['queryStringParameters']
+
+    user = query_string_parameters['ownerName']
+    model_id = query_string_parameters['modelId']
+    version = query_string_parameters['version']
+    node_url = "http://pygri-pygri-frtwp3inl2zq-2ea21a767266378c.elb.us-east-1.amazonaws.com:5000"
+
+    print(user, model_id, version, node_url)
+
+    # 2. get pygrid model
+    payload = {
+        "name": model_id,
+        "version": version,
+        "checkpoint": "latest"
+    }
+    url = node_url + "/model-centric/retrieve-model"
+
+    r = requests.get(url, params=payload)
+    data = r.json()
+    print(data)
+
+    serialized_model = data['serialized_model']
+    print(serialized_model)
+
+    # 3. put model to s3 bucket
+
+    # 4. flip is_active boolean on model in dynamo
+    # dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    # table = dynamodb.Table('model_table')
+
+    # update_response = table.update_item(
+    #     Key = {'model_id' : model_id},
+    #     UpdateExpression = "set active_status = :r",
+    #     ExpressionAttributeValues={
+    #     ':r': 0,
+    #     },
+    # )
+
+    # if update_response:
+    #     print("UPDATE success")
+    #     print(user)
+    #     print(version)
+
+    # # 5. return response with url  
+    # return {
+    #     'statusCode': 200,
+    #     'isBase64Encoded': False,
+    #     'headers': {},
+    #     'body': {'message': 'You\'ve successfully invoked the retrieve model method'},
+    #     }
 
 
 def lambda_handler(event, context):
