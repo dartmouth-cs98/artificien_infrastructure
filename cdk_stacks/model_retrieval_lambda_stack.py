@@ -4,7 +4,8 @@ from aws_cdk import (
     aws_iam as iam,
     aws_apigateway as apigateway,
     aws_ec2 as ec2,
-    aws_efs as efs
+    aws_efs as efs,
+    aws_s3 as s3
 )
 
 
@@ -47,6 +48,10 @@ class ModelRetrievalLambda(cdk.Stack):
             posix_user=efs.PosixUser(gid="1001", uid="1001")
         )
 
+        # Create S3 Bucket to store the pickled model in
+        bucket_name = 'artificien-retrieved-models-storage'
+        self.bucket = s3.Bucket(self, 'PickledModelsBucket', bucket_name=bucket_name)
+
         # Create the lambda function
         lambda_dir = './lambdas/model_retrieval_lambda'
         self.lambda_function = _lambda.Function(
@@ -55,6 +60,9 @@ class ModelRetrievalLambda(cdk.Stack):
             vpc=vpc,
             security_group=lambda_security_group,
             function_name='ModelRetrievalLambdaFunction',
+            environment= {
+                'S3_BUCKET': bucket_name
+            },
             runtime=_lambda.Runtime.PYTHON_3_7,
             code=_lambda.Code.from_asset(lambda_dir),  # directory where code is located
             handler='get_models.lambda_handler',  # the function the lambda invokes,
