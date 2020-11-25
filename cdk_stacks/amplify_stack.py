@@ -12,16 +12,18 @@ class AmplifyStack(cdk.Stack):
         super().__init__(scope, id, **kwargs)
 
         # Create a role, which the website will take on when contact any other services
-        amplify_role = iam.Role(self, 'amplifyRole',
-                                assumed_by=iam.ServicePrincipal('amplify.amazonaws.com'),
-                                description='A role that provides the amplify website access to DB + other resources')
-        amplify_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AdministratorAccess'))
+        self.amplify_role = iam.Role(self, 'amplifyRole',
+                                     assumed_by=iam.ServicePrincipal('amplify.amazonaws.com'),
+                                     description='A role that provides the amplify website access to DB + other '
+                                                 'resources')
+        self.amplify_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AdministratorAccess'))
+        self.amplify_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess'))
 
         # Link up our amplify app to our source code
         self.amplify_app = amplify.App(
             self,
             'app',
-            role=amplify_role,
+            role=self.amplify_role,
             source_code_provider=amplify.GitHubSourceCodeProvider(
                 owner='dartmouth-cs98',
                 repository='artificien_marketplace',

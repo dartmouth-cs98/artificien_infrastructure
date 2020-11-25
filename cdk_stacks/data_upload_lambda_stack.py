@@ -19,9 +19,6 @@ class DataUploadLambda(cdk.Stack):
         bucket_name = 'artificien-fake-dataset-storage'
         self.bucket = s3.Bucket(self, 'FakeDataBucket', bucket_name=bucket_name)
 
-        # Create the lambda function to post fake data
-        lambda_role = self.create_lambda_role()
-
         # Create the lambda function
         lambda_dir = './lambdas/data_upload_lambda'
         self.lambda_function = aws_lambda.Function(
@@ -29,21 +26,21 @@ class DataUploadLambda(cdk.Stack):
             'FakeDataLambda',
             function_name='FakeDataLambda',
             runtime=aws_lambda.Runtime.PYTHON_3_8,
-            role=lambda_role,
+            role=self.create_lambda_role(),
             environment={
-                'DYNAMO_TABLE': dataset_table.table_name,
-                'S3_BUCKET': bucket_name  # tells the lambda which bucket to write to
+                'DYNAMO_TABLE': dataset_table.table_name,  # tells function which table to read from
+                'S3_BUCKET': bucket_name  # tells the function which bucket to write to
             },
             code=aws_lambda.Code.from_asset(lambda_dir),  # directory where code is located
             handler='lambda_function.lambda_handler',  # the function the lambda invokes,
-            memory_size=128,  # MB - shouldn't need to many MB to generate fake data,
+            memory_size=128,  # MB - shouldn't need many MB to generate fake data,
             timeout=cdk.Duration.seconds(5)
         )
 
         # Save failed writes of Fake Datasets to an SQS queue so that we do not experience data loss
         dead_letter_queue = sqs.Queue(self, 'deadLetterQueueNewDataset');
 
-        # Configure the Dynamo Trigger
+        # Configure the Dynamo Trigger - sends the lambda the new data schema every time a new developer signs on
         self.lambda_function.add_event_source(
             DynamoEventSource(
                 table=dataset_table,
