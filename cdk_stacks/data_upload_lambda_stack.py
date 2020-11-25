@@ -18,6 +18,7 @@ class DataUploadLambda(cdk.Stack):
         # Create S3 Bucket to store the sample data CSVs in
         bucket_name = 'artificien-fake-dataset-storage'
         self.bucket = s3.Bucket(self, 'FakeDataBucket', bucket_name=bucket_name)
+        
 
         # Create the lambda function
         lambda_dir = './lambdas/data_upload_lambda'
