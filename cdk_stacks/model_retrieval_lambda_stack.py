@@ -16,6 +16,8 @@ class ModelRetrievalLambda(cdk.Stack):
         super().__init__(scope, id, **kwargs)
 
         # Create private VPC to store lambda + EFS inside of
+        # Need an NAT gateway to be able to install dependencies via pip.
+        # We can delete the gateway after installing these to save on cost
         vpc = ec2.Vpc(self, 'ModelRetrievalLambdaVpc', max_azs=2, nat_gateways=1)
 
         lambda_security_group = ec2.SecurityGroup(self, 'ModelRetrievalLambdaSg',
@@ -35,7 +37,7 @@ class ModelRetrievalLambda(cdk.Stack):
             'ModelRetrievalLambdaFileSystem',
             vpc=vpc,
             security_group=efs_security_group,
-            throughput_mode=efs.ThroughputMode.BURSTING, # Bursting mode adjusts throughput based on usage
+            throughput_mode=efs.ThroughputMode.BURSTING,  # Bursting mode adjusts throughput based on usage
             removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
@@ -60,7 +62,7 @@ class ModelRetrievalLambda(cdk.Stack):
             vpc=vpc,
             security_group=lambda_security_group,
             function_name='ModelRetrievalLambdaFunction',
-            environment= {
+            environment={
                 'S3_BUCKET': bucket_name
             },
             runtime=_lambda.Runtime.PYTHON_3_7,
@@ -112,6 +114,9 @@ class ModelRetrievalLambda(cdk.Stack):
             user_data=temp_userdata
         )
 
+        # Temp instance can't do anything until the EFS is provisioned and running
+        temp_instance.node.add_dependency(fs)
+
         # Instance will tag itself as done (see last line of user data) once its finished installing dependencies
         # Post deploy script will check to ensure that the Ec2 instance is done before deleting it
         create_tags_permissions = iam.PolicyStatement(
@@ -130,6 +135,7 @@ class ModelRetrievalLambda(cdk.Stack):
 
 def add_permissions_to_lambda(lambda_role):
     lambda_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess'))
+    lambda_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonS3FullAccess'))
 
 
 def create_access_policy(iam_principals):
