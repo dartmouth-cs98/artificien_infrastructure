@@ -37,3 +37,6 @@ class AmplifyStack(cdk.Stack):
 
         master_branch = self.amplify_app.add_branch('master')  # dev environment
         master_branch.add_environment('STAGE', 'dev')
+
+        # Output domain name
+        cdk.CfnOutput(self, 'amplifyDevURL', value=self.amplify_app.default_domain)

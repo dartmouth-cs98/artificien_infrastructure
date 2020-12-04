@@ -53,12 +53,7 @@ pygrid_stack = PygridNodeStack(app, 'pygrid', env=env)
 data_upload_lambda = DataUploadLambda(app, 'dataUploadLambda',
                                       dataset_table=dynamo_db_stack.dataset_table, env=env)
 
-# model_retrieval_lambda = ModelRetrievalLambda(app, 'modelRetreivalLambda',
-#                                               iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user,
-#                                                               iam.AccountRootPrincipal()],
-#                                               env=env)
-
-
+# Model Retrieval Lambda
 model_retrieval_lambda = ModelRetrievalLambda(app, 'modelRetreivalLambda',
                                               iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user,
                                                               iam.AccountRootPrincipal()],

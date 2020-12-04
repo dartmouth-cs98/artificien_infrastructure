@@ -4,6 +4,12 @@ import boto3
 from botocore.exceptions import ClientError
 from godaddypy import Client, Account
 
+# Config GoDaddy
+go_daddy_api_key = 'dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg'
+go_daddy_api_secret = '59ruhpKYtfr4x81RTRXybQ'
+my_acct = Account(api_key=go_daddy_api_key, api_secret=go_daddy_api_secret)
+client = Client(my_acct)
+
 
 def get_outputs(stack_name: str):
     """ Helper function to get CfnOutputs from deployed stacks"""
@@ -47,14 +53,25 @@ def update_jupyter_dns():
     jupyter_ipv4 = jupyter_instance.public_ip_address
     print('Updating GoDaddy DNS Record to point to ', jupyter_ipv4)
 
-    # Config GoDaddy
-    go_daddy_api_key = 'dL3mjknFQM5d_FZGvvHrdXQCkiCbkZoB8Hg'
-    go_daddy_api_secret = '59ruhpKYtfr4x81RTRXybQ'
-    my_acct = Account(api_key=go_daddy_api_key, api_secret=go_daddy_api_secret)
-    client = Client(my_acct)
-
     # Add a new A Record
     client.update_record_ip(jupyter_ipv4, 'artificien.com', 'jupyter', 'A')
+
+
+def update_amplify_domain():
+
+    # Obtained from amplify itself
+    acm_name = '_1d72a3c5024c1d8e089087bad7beec4d.artificien.com.'
+    acm_host = '_2a32d5b47b26b6b155f5004a185cf81f.wggjkglgrm.acm-validations.aws.'
+    amplify_domain_name = 'd310e7hi7dan2f.cloudfront.net'
+
+    # Add CNAME for domain itself
+    print('Updating GoDaddy DNS Record to point to Amplify domain URL')
+    record = {'data': amplify_domain_name, 'name': 'www', 'ttl': 600, 'type': 'CNAME'}
+    client.update_record('artificien.com', record)
+
+    # Add CNAME for AWS Certificate Manager (ACM) certificate
+    record = {'data': acm_host, 'name': acm_name, 'ttl': 600, 'type': 'CNAME'}
+    client.add_record('artificien.com', record)
 
 
 def delete_temporary_ec2():
@@ -72,7 +89,7 @@ def delete_temporary_ec2():
     session = boto3.session.Session()
     ec2_resource = session.resource('ec2')
     ec2instance = ec2_resource.Instance(instance_id)
-    if ec2instance.tags is not None:
+    try:
         # checks if user_data tag is true
         done = False
         for tags in ec2instance.tags:
@@ -83,10 +100,12 @@ def delete_temporary_ec2():
 
         if not done:
             print('Instance not yet done installing pip dependencies')
-    else:
-        print('Instance is not yet started')
+
+    except AttributeError as err:
+        print('Instance is not yet started, or has already been terminated')
 
 
 # Perform all post-deployment actions
-# update_jupyter_dns()
+update_jupyter_dns()
 delete_temporary_ec2()
+update_amplify_domain()

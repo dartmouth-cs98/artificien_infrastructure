@@ -44,6 +44,7 @@ class JupyterServiceStack(cdk.Stack):
             # create userdata
             letsencrypt_email = 'epsteinj.us@gmail.com'
             letsencrypt_domain = 'jupyter.artificien.com'
+            github_auth_token = '084f381f25c76d5b417ccfae922a36215bc87950'
 
             jupyter_userdata = ec2.UserData.for_linux(shebang="#!/bin/bash -x")
             jupyter_userdata.add_commands(
@@ -98,22 +99,37 @@ class JupyterServiceStack(cdk.Stack):
                 "export PATH=/opt/tljh/user/bin:${PATH}",
                 "chown -R ubuntu /opt/tljh/user",
                 "chmod -R +x /opt/tljh/user",
-                "conda install -y python=3.7",
+                "conda install -y python=3.8",
                 "conda install -y numpy",
                 "conda install -y pandas",
-                "yes | pip install syft[udacity]"
 
                 ###################
                 # Enable Jupyterlab
                 ###################
                 "sudo tljh-config set user_environment.default_app jupyterlab",
-                "sudo tljh-config reload hub"
+                "sudo tljh-config reload hub",
+                
+                ##############################
+                # Install Artificien library #
+                ##############################
+                "git clone https://" + github_auth_token + "@github.com/dartmouth-cs98/artificien_experimental.git",
+                "pip install -e ./artificien_experimental/artificienLibrary",
 
-                ###############
-                # Get Fake Data
-                ###############
-                "sudo mkdir -p /srv/data/sample_data"
-                # Download data HERE into /srv/data/sample_data (no code to download yet)
+                ###############################
+                # Get Fake Data and Tutorials #
+                ###############################
+                "sudo mkdir -p /srv/data/sample_data",
+                "sudo mkdir /srv/data/tutorials",
+
+                # Get the tutorial notebook(s)
+                "cd /srv/data/tutorials",
+                "sudo git clone https://" + github_auth_token + "@github.com/dartmouth-cs98/artificien_tutorials.git .",
+
+                # Get the sample data
+                "cd /srv/data/sample_data",
+                "aws s3 cp s3://artificien-fake-dataset-storage//tmp/ . --recursive",
+
+                # Create symbolic link
                 "cd /etc/skel",
                 "sudo ln -s /srv/data/sample_data sample_data"
             )
@@ -131,9 +147,11 @@ class JupyterServiceStack(cdk.Stack):
                 user_data=jupyter_userdata
             )
 
-            # Give the instance role access to S3
+            # Give the instance role access to S3 (to get sample data) and Dynamo (to store user models)
             self.jupyter_instance.role.add_managed_policy(
                 iam.ManagedPolicy.from_aws_managed_policy_name('AmazonS3FullAccess'))
+            self.jupyter_instance.role.add_managed_policy(
+                iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess'))
 
             # Give instance a name
             cdk.Tags.of(self.jupyter_instance).add('Name', 'Little Jupyter Service')

@@ -13,9 +13,10 @@ class PygridNodeStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.vpc = ec2.Vpc(self , "PygridVPC", max_azs=2)
+        self.vpc = ec2.Vpc(self, "PygridVPC", max_azs=2)
 
-        self.cluster = ecs.Cluster(self, 'PyGridCluster',
+        self.cluster = ecs.Cluster(
+            self, 'PyGridCluster',
             vpc=self.vpc
         )
 
@@ -24,8 +25,8 @@ class PygridNodeStack(cdk.Stack):
             'PyGridService',
             # Resources
             cluster=self.cluster,
-            cpu=512,
-            memory_limit_mib=2048,
+            cpu=4096,
+            memory_limit_mib=9216,
             desired_count=1,
 
             # Load balancer config
