@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 import boto3
+
 efs_mount = '/mnt/python/'
 sys.path.append(efs_mount)  # import dependencies installed in EFS (can ONLY import EFS packages AFTER this step)
 # import syft as sy
@@ -34,8 +35,6 @@ Requirements for the response:
 '''
 logging.getLogger().setLevel(logging.INFO)
 
-
-# Enable CORS
 headers = {
     "Access-Control-Allow-Credentials": True,
     "Access-Control-Allow-Origin": "*",
@@ -43,13 +42,13 @@ headers = {
 }
 
 
-def default():
+def default(event):
     logging.info('Successfully served GET/ method')
     return {
         'isBase64Encoded': False,
         'statusCode': 404,
         'headers': headers,
-        'body': json.dumps({'message': 'ERROR: Method not found'})
+        'body': json.dumps({'message': event})
     }
 
 
@@ -62,6 +61,7 @@ def test():
         'body': json.dumps({'message': "You've successfully invoked the test method"})
     }
 
+
 def retrieve(event):
     # 1. parse out the event values
     query_string_parameters = event['queryStringParameters']
@@ -69,7 +69,7 @@ def retrieve(event):
     user = query_string_parameters['ownerName']
     model_id = query_string_parameters['modelId']
     version = query_string_parameters['version']
-    node_url = "http://pygri-pygri-frtwp3inl2zq-2ea21a767266378c.elb.us-east-1.amazonaws.com:5000"  # test, should be query_string_parameters['nodeURL']
+    node_url = query_string_parameters['nodeURL']  # test, should be query_string_parameters['nodeURL']
 
     # 2. get pygrid model
     payload = {
@@ -80,19 +80,21 @@ def retrieve(event):
 
     url = node_url + "/model-centric/retrieve-model"
     r = requests.get(url, params=payload)
-    th.save(r.content, '/tmp/model.pkl') # only the /tmp directory in lambda is writable
+    th.save(r.content, '/tmp/model.pkl')  # only the /tmp directory in lambda is writable
 
     # 3. put model to s3 bucket
     s3 = boto3.client('s3')
     s3_bucket_name = os.environ['S3_BUCKET']
     region = os.environ['AWS_REGION']
     file_name = user + model_id + version + '/tmp/model.pkl'
-    s3.upload_file('/tmp/model.pkl', s3_bucket_name, file_name)
-    print('done!')
+    s3.upload_file('/tmp/model.pkl', s3_bucket_name, file_name, ExtraArgs={'ACL': 'public-read'})
 
-    bucket_url = 'https://s3.console.aws.amazon.com/s3/object/' + s3_bucket_name + '?region=' + region + '&prefix=' + file_name
+    # 4. format public object URL
+    # bucket_url = 'https://s3.console.aws.amazon.com/s3/object/' + s3_bucket_name + '?region=' + region + '&prefix=' + file_name
 
-    # 4. flip is_active boolean on model in dynamo
+    # https://artificien-retrieved-models-storage.s3.amazonaws.com/bingodingodongomnist1.0/tmp/model.pkl
+    bucket_url = 'https://artificien-retrieved-models-storage.s3.amazonaws.com/' + user + model_id + version + "/tmp/model.pkl"
+    # 5. flip is_active boolean on model in dynamo
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('model_table')
 
@@ -104,10 +106,7 @@ def retrieve(event):
         },
     )
 
-    if update_response:
-        print("UPDATE success")
-
-    # # 5. return response with url
+    # 6. return response with url
     return {
         'isBase64Encoded': False,
         'statusCode': 200,
@@ -118,14 +117,13 @@ def retrieve(event):
 
 def lambda_handler(event, context):
     try:
-        print("BINGOBINGOBINGO")
         method = event['httpMethod']
         # body = event['body'] # JSON body passed to method
         # headers = event['headers'] # JSON headers
 
         if method == 'GET':
             if event['path'] == '/':
-                return default()
+                return default(event)
             if event['path'] == '/test':
                 return test()
             if event['path'] == '/retrieve':
@@ -157,4 +155,3 @@ def lambda_handler(event, context):
             'headers': {},
             'body': json.dumps({'message': 'Unexpected error occurred.'})
         }
-
