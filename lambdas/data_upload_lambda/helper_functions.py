@@ -214,7 +214,7 @@ def query_to_csv(column_header, input):
     test_ranges = right_info[3]
 
     # write the csv
-    filename = ("/tmp/" + input + '.csv')
+    filename = ("/" + input + '.csv')
     convert_to_csv(test_columns, test_schema, test_ranges, test_num_rows, filename)
     print("convert to csv done")
 
