@@ -9,11 +9,11 @@ from cdk_stacks.jupyter_service_stack import JupyterServiceStack
 from cdk_stacks.pygrid_node_stack import PygridNodeStack
 from cdk_stacks.data_upload_lambda_stack import DataUploadLambda
 from cdk_stacks.model_retrieval_lambda_stack import ModelRetrievalLambda
+from cdk_stacks.ecs_cluster_stack import EcsClusterStack
 
 ###########
 # Globals #
 ###########
-
 env = cdk.Environment(account="719471536408", region="us-east-1")
 region = 'us-east-1'
 
@@ -36,40 +36,61 @@ dynamo_db_stack = DynamoDBStack(app, "dynamo-db", env=env)  # Launch DynamoDB
 amplify_stack = AmplifyStack(app, 'amplify', env=env)  # Launch Amplify
 
 # Launch Cognito to conduct authentication to the artificien website and to JupyterHub
-cognito_stack = CognitoStack(app, 'cognito', jupyter_domains=jupyter_domains, env=env)
+cognito_stack = CognitoStack(
+    app,
+    'cognito',
+    jupyter_domains=jupyter_domains,
+    env=env
+)
 
 # Launch JupyterHub
-jupyter_stack = JupyterServiceStack(app, 'jupyter',
-                                    jupyter_domains=jupyter_domains,
-                                    jupyter_cognito_client_id=jupyter_cognito_client_id,
-                                    jupyter_cognito_client_secret=jupyter_cognito_client_secret,
-                                    instance_type='t3.medium',
-                                    env=env)
+jupyter_stack = JupyterServiceStack(
+    app,
+    'jupyter',
+    jupyter_domains=jupyter_domains,
+    jupyter_cognito_client_id=jupyter_cognito_client_id,
+    jupyter_cognito_client_secret=jupyter_cognito_client_secret,
+    instance_type='t3.medium',
+    env=env
+)
 
-# Launch Pygrid
-pygrid_stack = PygridNodeStack(app, 'pygrid', env=env)
+# Launch ECS cluster to host Pygrid in:
+ecs_cluster_stack = EcsClusterStack(
+    app,
+    'ecsCluster',
+    env=env
+)
+
+# Launch PyGrid itself
+pygrid_stack = PygridNodeStack(
+    app,
+    'pygrid',
+    vpc=ecs_cluster_stack.vpc,
+    cluster=ecs_cluster_stack.cluster,
+    env=env
+)
 
 # Launch Lambdas
-data_upload_lambda = DataUploadLambda(app, 'dataUploadLambda',
-                                      dataset_table=dynamo_db_stack.dataset_table, env=env)
+data_upload_lambda = DataUploadLambda(  # Creates sample data for clients to test on
+    app,
+    'dataUploadLambda',
+    dataset_table=dynamo_db_stack.dataset_table,
+    env=env
+)
 
-# model_retrieval_lambda = ModelRetrievalLambda(app, 'modelRetreivalLambda',
-#                                               iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user,
-#                                                               iam.AccountRootPrincipal()],
-#                                               env=env)
-
-
-model_retrieval_lambda = ModelRetrievalLambda(app, 'modelRetreivalLambda',
-                                              iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user,
-                                                              iam.AccountRootPrincipal()],
-                                              env=env)
+model_retrieval_lambda = ModelRetrievalLambda(  # Retrieves models when they are finished training
+    app,
+    'modelRetreivalLambda',
+    iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user, iam.AccountRootPrincipal()],
+    env=env
+)
 
 # Configure Dependencies:
+pygrid_stack.add_dependency(ecs_cluster_stack)
 data_upload_lambda.add_dependency(dynamo_db_stack)
 model_retrieval_lambda.add_dependency(dynamo_db_stack)
 model_retrieval_lambda.add_dependency(amplify_stack)
 jupyter_stack.add_dependency(cognito_stack)
-
 
 # Synthesize CloudFormation Templates to create these cloud resources
 app.synth()
