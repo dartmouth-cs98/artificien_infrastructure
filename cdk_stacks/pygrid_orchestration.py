@@ -71,7 +71,7 @@ def create_node():
     #add endpoint to db, set hasNode to true
     response = table.get_item(Key={'app_id':app_id})
     item = response['Item']
-    item['hasNode'] = 'True'
+    item['hasNode'] = True
     item['nodeAddress'] = instance_id
 
 #delete node of an app developer
