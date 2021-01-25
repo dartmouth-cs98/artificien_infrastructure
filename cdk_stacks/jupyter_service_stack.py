@@ -101,19 +101,26 @@ class JupyterServiceStack(cdk.Stack):
                 "conda install -y python=3.7",
                 "conda install -y numpy",
                 "conda install -y pandas",
-                "yes | pip install syft[udacity]"
+                "yes | pip install syft[udacity]",
 
                 ###################
                 # Enable Jupyterlab
                 ###################
                 "sudo tljh-config set user_environment.default_app jupyterlab",
-                "sudo tljh-config reload hub"
+                "sudo tljh-config reload hub",
 
                 ###############
                 # Get Fake Data
                 ###############
-                "sudo mkdir -p /srv/data/sample_data"
-                # Download data HERE into /srv/data/sample_data (no code to download yet)
+                "sudo mkdir -p /srv/data/sample_data",
+                
+                # Use a cronjob to pull new sample data to the repository every 30 minutes
+                "sudo crontab -l > mycron",
+                "echo \'0,30 * * * * aws s3 cp s3://artificien-fake-dataset-storage/ /srv/data/sample_data --recursive\' >> mycron ",
+                "sudo crontab mycron",
+                "rm mycron",
+                
+                # Create a symbolic link to the /etc/skel dir so that users of JupyterHub can access the sample data
                 "cd /etc/skel",
                 "sudo ln -s /srv/data/sample_data sample_data"
             )
