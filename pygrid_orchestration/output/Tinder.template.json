@@ -1,0 +1,676 @@
+{
+  "Resources": {
+    "PygridVPCA12AD5FB": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "InstanceTenancy": "default",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet1Subnet7221F67E": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/18",
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Public"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public"
+          },
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet1RouteTableE53EECEF": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet1RouteTableAssociationC4A2F6E4": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPublicSubnet1RouteTableE53EECEF"
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
+        }
+      }
+    },
+    "PygridVPCPublicSubnet1DefaultRoute51C9D3A9": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPublicSubnet1RouteTableE53EECEF"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "PygridVPCIGW7DFB56D6"
+        }
+      },
+      "DependsOn": [
+        "PygridVPCVPCGW5CD59693"
+      ]
+    },
+    "PygridVPCPublicSubnet1EIPEF944436": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet1NATGateway6A47ECBD": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "PygridVPCPublicSubnet1EIPEF944436",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet2Subnet663C643C": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.64.0/18",
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            1,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Public"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public"
+          },
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet2RouteTableBDFC7501": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet2RouteTableAssociation8CC00B2C": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPublicSubnet2RouteTableBDFC7501"
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
+        }
+      }
+    },
+    "PygridVPCPublicSubnet2DefaultRoute75A60ACE": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPublicSubnet2RouteTableBDFC7501"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "PygridVPCIGW7DFB56D6"
+        }
+      },
+      "DependsOn": [
+        "PygridVPCVPCGW5CD59693"
+      ]
+    },
+    "PygridVPCPublicSubnet2EIP3FA40A21": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPublicSubnet2NATGateway09EE8F12": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "PygridVPCPublicSubnet2EIP3FA40A21",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PublicSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPrivateSubnet1Subnet0134B5B4": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.128.0/18",
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Private"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private"
+          },
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PrivateSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPrivateSubnet1RouteTableCE4FF750": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PrivateSubnet1"
+          }
+        ]
+      }
+    },
+    "PygridVPCPrivateSubnet1RouteTableAssociation0060C776": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPrivateSubnet1RouteTableCE4FF750"
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+        }
+      }
+    },
+    "PygridVPCPrivateSubnet1DefaultRoute9C7A886C": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPrivateSubnet1RouteTableCE4FF750"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "PygridVPCPublicSubnet1NATGateway6A47ECBD"
+        }
+      }
+    },
+    "PygridVPCPrivateSubnet2Subnet5705EC30": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.192.0/18",
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            1,
+            {
+              "Fn::GetAZs": ""
+            }
+          ]
+        },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Private"
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private"
+          },
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PrivateSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPrivateSubnet2RouteTableE7F9CF19": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC/PrivateSubnet2"
+          }
+        ]
+      }
+    },
+    "PygridVPCPrivateSubnet2RouteTableAssociationA59AD985": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPrivateSubnet2RouteTableE7F9CF19"
+        },
+        "SubnetId": {
+          "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+        }
+      }
+    },
+    "PygridVPCPrivateSubnet2DefaultRoute2A00262E": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PygridVPCPrivateSubnet2RouteTableE7F9CF19"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "PygridVPCPublicSubnet2NATGateway09EE8F12"
+        }
+      }
+    },
+    "PygridVPCIGW7DFB56D6": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Tinder/PygridVPC"
+          }
+        ]
+      }
+    },
+    "PygridVPCVPCGW5CD59693": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        },
+        "InternetGatewayId": {
+          "Ref": "PygridVPCIGW7DFB56D6"
+        }
+      }
+    },
+    "PyGridCluster7B103478": {
+      "Type": "AWS::ECS::Cluster"
+    },
+    "PyGridLogGroup5C1F6DB0": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 30
+      },
+      "UpdateReplacePolicy": "Delete",
+      "DeletionPolicy": "Delete"
+    },
+    "PyGridLoadBalancer9681F5FE": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "LoadBalancerAttributes": [
+          {
+            "Key": "deletion_protection.enabled",
+            "Value": "false"
+          },
+          {
+            "Key": "load_balancing.cross_zone.enabled",
+            "Value": "true"
+          }
+        ],
+        "Scheme": "internet-facing",
+        "Subnets": [
+          {
+            "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
+          },
+          {
+            "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
+          }
+        ],
+        "Type": "network"
+      },
+      "DependsOn": [
+        "PygridVPCPublicSubnet1DefaultRoute51C9D3A9",
+        "PygridVPCPublicSubnet2DefaultRoute75A60ACE"
+      ]
+    },
+    "PyGridLoadBalancerPublicListener3FB27E8B": {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": {
+              "Ref": "PyGridLoadBalancerPublicListenerECSGroupBF2F9660"
+            },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": {
+          "Ref": "PyGridLoadBalancer9681F5FE"
+        },
+        "Port": 5000,
+        "Protocol": "TCP"
+      }
+    },
+    "PyGridLoadBalancerPublicListenerECSGroupBF2F9660": {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthCheckPort": "traffic-port",
+        "HealthCheckProtocol": "TCP",
+        "Port": 80,
+        "Protocol": "TCP",
+        "TargetType": "ip",
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        }
+      }
+    },
+    "PyGridServiceTaskDefTaskRoleEF913550": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "PyGridServiceTaskDefE00C8BDE": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Environment": [
+              {
+                "Name": "NODE_ID",
+                "Value": "node0"
+              },
+              {
+                "Name": "ADDRESS",
+                "Value": "http://localhost:5000"
+              },
+              {
+                "Name": "PORT",
+                "Value": "5000"
+              },
+              {
+                "Name": "DATABASE_URL",
+                "Value": "sqlite:///databasenode.db"
+              }
+            ],
+            "Essential": true,
+            "Image": "openmined/grid-node:production",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "PyGridLogGroup5C1F6DB0"
+                },
+                "awslogs-stream-prefix": "PyGridNode",
+                "awslogs-region": {
+                  "Ref": "AWS::Region"
+                }
+              }
+            },
+            "Name": "pygrid_node",
+            "PortMappings": [
+              {
+                "ContainerPort": 5000,
+                "Protocol": "tcp"
+              }
+            ]
+          }
+        ],
+        "Cpu": "512",
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "PyGridServiceTaskDefExecutionRole777C20FC",
+            "Arn"
+          ]
+        },
+        "Family": "TinderPyGridServiceTaskDef5A1C3B11",
+        "Memory": "2048",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE"
+        ],
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "PyGridServiceTaskDefTaskRoleEF913550",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "PyGridServiceTaskDefExecutionRole777C20FC": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "PyGridServiceTaskDefExecutionRoleDefaultPolicy7BF21E2C": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "PyGridLogGroup5C1F6DB0",
+                  "Arn"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "PyGridServiceTaskDefExecutionRoleDefaultPolicy7BF21E2C",
+        "Roles": [
+          {
+            "Ref": "PyGridServiceTaskDefExecutionRole777C20FC"
+          }
+        ]
+      }
+    },
+    "PyGridServiceB6468FA1": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+        "Cluster": {
+          "Ref": "PyGridCluster7B103478"
+        },
+        "DeploymentConfiguration": {
+          "MaximumPercent": 200,
+          "MinimumHealthyPercent": 50
+        },
+        "DesiredCount": 1,
+        "EnableECSManagedTags": false,
+        "HealthCheckGracePeriodSeconds": 60,
+        "LaunchType": "FARGATE",
+        "LoadBalancers": [
+          {
+            "ContainerName": "pygrid_node",
+            "ContainerPort": 5000,
+            "TargetGroupArn": {
+              "Ref": "PyGridLoadBalancerPublicListenerECSGroupBF2F9660"
+            }
+          }
+        ],
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "SecurityGroups": [
+              {
+                "Fn::GetAtt": [
+                  "PyGridServiceSecurityGroup7B60D48C",
+                  "GroupId"
+                ]
+              }
+            ],
+            "Subnets": [
+              {
+                "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+              },
+              {
+                "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+              }
+            ]
+          }
+        },
+        "TaskDefinition": {
+          "Ref": "PyGridServiceTaskDefE00C8BDE"
+        }
+      },
+      "DependsOn": [
+        "PyGridLoadBalancerPublicListenerECSGroupBF2F9660",
+        "PyGridLoadBalancerPublicListener3FB27E8B"
+      ]
+    },
+    "PyGridServiceSecurityGroup7B60D48C": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Tinder/PyGridService/Service/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "from 0.0.0.0/0:All",
+            "FromPort": 0,
+            "IpProtocol": "tcp",
+            "ToPort": 65535
+          }
+        ],
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "PyGridNodeLoadBalancerDNS": {
+      "Value": {
+        "Fn::GetAtt": [
+          "PyGridLoadBalancer9681F5FE",
+          "DNSName"
+        ]
+      }
+    }
+  }
+}
