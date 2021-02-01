@@ -1,391 +1,5 @@
 {
   "Resources": {
-    "PygridVPCA12AD5FB": {
-      "Type": "AWS::EC2::VPC",
-      "Properties": {
-        "CidrBlock": "10.0.0.0/16",
-        "EnableDnsHostnames": true,
-        "EnableDnsSupport": true,
-        "InstanceTenancy": "default",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet1Subnet7221F67E": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "CidrBlock": "10.0.0.0/18",
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            0,
-            {
-              "Fn::GetAZs": ""
-            }
-          ]
-        },
-        "MapPublicIpOnLaunch": true,
-        "Tags": [
-          {
-            "Key": "aws-cdk:subnet-name",
-            "Value": "Public"
-          },
-          {
-            "Key": "aws-cdk:subnet-type",
-            "Value": "Public"
-          },
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet1RouteTableE53EECEF": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet1RouteTableAssociationC4A2F6E4": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPublicSubnet1RouteTableE53EECEF"
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
-        }
-      }
-    },
-    "PygridVPCPublicSubnet1DefaultRoute51C9D3A9": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPublicSubnet1RouteTableE53EECEF"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "GatewayId": {
-          "Ref": "PygridVPCIGW7DFB56D6"
-        }
-      },
-      "DependsOn": [
-        "PygridVPCVPCGW5CD59693"
-      ]
-    },
-    "PygridVPCPublicSubnet1EIPEF944436": {
-      "Type": "AWS::EC2::EIP",
-      "Properties": {
-        "Domain": "vpc",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet1NATGateway6A47ECBD": {
-      "Type": "AWS::EC2::NatGateway",
-      "Properties": {
-        "AllocationId": {
-          "Fn::GetAtt": [
-            "PygridVPCPublicSubnet1EIPEF944436",
-            "AllocationId"
-          ]
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet2Subnet663C643C": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "CidrBlock": "10.0.64.0/18",
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            1,
-            {
-              "Fn::GetAZs": ""
-            }
-          ]
-        },
-        "MapPublicIpOnLaunch": true,
-        "Tags": [
-          {
-            "Key": "aws-cdk:subnet-name",
-            "Value": "Public"
-          },
-          {
-            "Key": "aws-cdk:subnet-type",
-            "Value": "Public"
-          },
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet2RouteTableBDFC7501": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet2RouteTableAssociation8CC00B2C": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPublicSubnet2RouteTableBDFC7501"
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
-        }
-      }
-    },
-    "PygridVPCPublicSubnet2DefaultRoute75A60ACE": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPublicSubnet2RouteTableBDFC7501"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "GatewayId": {
-          "Ref": "PygridVPCIGW7DFB56D6"
-        }
-      },
-      "DependsOn": [
-        "PygridVPCVPCGW5CD59693"
-      ]
-    },
-    "PygridVPCPublicSubnet2EIP3FA40A21": {
-      "Type": "AWS::EC2::EIP",
-      "Properties": {
-        "Domain": "vpc",
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPublicSubnet2NATGateway09EE8F12": {
-      "Type": "AWS::EC2::NatGateway",
-      "Properties": {
-        "AllocationId": {
-          "Fn::GetAtt": [
-            "PygridVPCPublicSubnet2EIP3FA40A21",
-            "AllocationId"
-          ]
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PublicSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPrivateSubnet1Subnet0134B5B4": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "CidrBlock": "10.0.128.0/18",
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            0,
-            {
-              "Fn::GetAZs": ""
-            }
-          ]
-        },
-        "MapPublicIpOnLaunch": false,
-        "Tags": [
-          {
-            "Key": "aws-cdk:subnet-name",
-            "Value": "Private"
-          },
-          {
-            "Key": "aws-cdk:subnet-type",
-            "Value": "Private"
-          },
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PrivateSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPrivateSubnet1RouteTableCE4FF750": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PrivateSubnet1"
-          }
-        ]
-      }
-    },
-    "PygridVPCPrivateSubnet1RouteTableAssociation0060C776": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPrivateSubnet1RouteTableCE4FF750"
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
-        }
-      }
-    },
-    "PygridVPCPrivateSubnet1DefaultRoute9C7A886C": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPrivateSubnet1RouteTableCE4FF750"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "NatGatewayId": {
-          "Ref": "PygridVPCPublicSubnet1NATGateway6A47ECBD"
-        }
-      }
-    },
-    "PygridVPCPrivateSubnet2Subnet5705EC30": {
-      "Type": "AWS::EC2::Subnet",
-      "Properties": {
-        "CidrBlock": "10.0.192.0/18",
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            1,
-            {
-              "Fn::GetAZs": ""
-            }
-          ]
-        },
-        "MapPublicIpOnLaunch": false,
-        "Tags": [
-          {
-            "Key": "aws-cdk:subnet-name",
-            "Value": "Private"
-          },
-          {
-            "Key": "aws-cdk:subnet-type",
-            "Value": "Private"
-          },
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PrivateSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPrivateSubnet2RouteTableE7F9CF19": {
-      "Type": "AWS::EC2::RouteTable",
-      "Properties": {
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC/PrivateSubnet2"
-          }
-        ]
-      }
-    },
-    "PygridVPCPrivateSubnet2RouteTableAssociationA59AD985": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPrivateSubnet2RouteTableE7F9CF19"
-        },
-        "SubnetId": {
-          "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
-        }
-      }
-    },
-    "PygridVPCPrivateSubnet2DefaultRoute2A00262E": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PygridVPCPrivateSubnet2RouteTableE7F9CF19"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "NatGatewayId": {
-          "Ref": "PygridVPCPublicSubnet2NATGateway09EE8F12"
-        }
-      }
-    },
-    "PygridVPCIGW7DFB56D6": {
-      "Type": "AWS::EC2::InternetGateway",
-      "Properties": {
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "perceptron/PygridVPC"
-          }
-        ]
-      }
-    },
-    "PygridVPCVPCGW5CD59693": {
-      "Type": "AWS::EC2::VPCGatewayAttachment",
-      "Properties": {
-        "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
-        },
-        "InternetGatewayId": {
-          "Ref": "PygridVPCIGW7DFB56D6"
-        }
-      }
-    },
-    "PyGridCluster7B103478": {
-      "Type": "AWS::ECS::Cluster"
-    },
     "PyGridLogGroup5C1F6DB0": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -410,18 +24,14 @@
         "Scheme": "internet-facing",
         "Subnets": [
           {
-            "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
+            "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPublicSubnet1Subnet7221F67E164F838C"
           },
           {
-            "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
+            "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPublicSubnet2Subnet663C643C5D60C5EE"
           }
         ],
         "Type": "network"
-      },
-      "DependsOn": [
-        "PygridVPCPublicSubnet1DefaultRoute51C9D3A9",
-        "PygridVPCPublicSubnet2DefaultRoute75A60ACE"
-      ]
+      }
     },
     "PyGridLoadBalancerPublicListener3FB27E8B": {
       "Type": "AWS::ElasticLoadBalancingV2::Listener",
@@ -450,7 +60,7 @@
         "Protocol": "TCP",
         "TargetType": "ip",
         "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
+          "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCA12AD5FB951EAF47"
         }
       }
     },
@@ -588,7 +198,7 @@
       "Type": "AWS::ECS::Service",
       "Properties": {
         "Cluster": {
-          "Ref": "PyGridCluster7B103478"
+          "Fn::ImportValue": "ecsCluster:ExportsOutputRefPyGridCluster7B1034780F600999"
         },
         "DeploymentConfiguration": {
           "MaximumPercent": 200,
@@ -620,10 +230,10 @@
             ],
             "Subnets": [
               {
-                "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+                "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPrivateSubnet1Subnet0134B5B4FE1EB369"
               },
               {
-                "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+                "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPrivateSubnet2Subnet5705EC3025A0ED1F"
               }
             ]
           }
@@ -658,7 +268,7 @@
           }
         ],
         "VpcId": {
-          "Ref": "PygridVPCA12AD5FB"
+          "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCA12AD5FB951EAF47"
         }
       }
     }

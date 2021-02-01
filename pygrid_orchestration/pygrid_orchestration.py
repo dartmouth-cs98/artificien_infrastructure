@@ -1,3 +1,5 @@
+from syft.frameworks.torch.hook import hook
+
 import boto3
 from boto3.dynamodb.conditions import Key
 from flask import Flask, jsonify, request
@@ -16,7 +18,7 @@ from syft.execution.translation import TranslationTarget
 from orchestration_helper import AppFactory
 import subprocess
 import shlex
-
+import jsonpickle
 
 from datetime import date
 import torch as th
@@ -26,6 +28,14 @@ from websocket import create_connection
 import websockets
 import json
 import requests
+from socket_handler import SocketHandler
+
+# Singleton socket handler
+handler = SocketHandler()
+
+sy.make_hook(globals())
+hook.local_worker.framework = None  # force protobuf serialization for tensors
+th.random.manual_seed(1)
 
 app = Flask(__name__)
 region_name = "us-east-1"
@@ -67,7 +77,7 @@ def create_node():
             return jsonify({'status': 'node is deploying, please try later'})
         nodeURL = output_dict['PyGridNodeLoadBalancerDNS']
         # put nodeAddress into DB
-        model_response['Items'][0]['nodeURL'] = nodeURL
+        model_response['Items'][0]['node_URL'] = nodeURL
         model_table.put_item(Item=model_response['Items'][0])
         return jsonify({'status': 'ready'})
 
@@ -92,21 +102,41 @@ def create_node():
 @app.route("/delete", methods=["POST"])
 def delete_node():
     return None
+
 @app.route("/send", methods=["POST"])
 def send_model():
-    nodeAddress=None
-    name=None
-    node = ModelCentricFLClient(id="test", address=nodeAddress, secure=False)
-    node.connect()
+    model_table = dynamodb.Table('model_table')
 
+    training_plan_pkl = request.json.get('training_plan')
+    #training_plan = jsonpickle.decode(training_plan_pkl)
+    training_plan = protobuf.serde._unbufferize(hook.local_worker, training_plan_pkl)
+
+    model_params_pkl = request.json.get('model_params')
+    #model_params = jsonpickle.decode(model_params_pkl)
+    model_params = protobuf.serde._unbufferize(hook.local_worker, model_params_pkl)
+
+    avg_plan_pkl = request.json.get('avg_plan')
+    #avg_plan = jsonpickle.decode(avg_plan_pkl)
+    avg_plan = protobuf.serde._unbufferize(hook.local_worker, avg_plan_pkl)
+
+    name = request.json.get('name')
     version = request.json.get('version')
     batch_size = request.json.get('batch_size')
     learning_rate = request.json.get('learning_rate')
     max_updates = request.json.get('max_updates')
-    model_params = request.json.get('model_params')
-    training_plan = request.json.get('training_plan')
-    avg_plan = request.json.get('avg_plan')
 
+    try:
+        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(name))
+    except:
+        return jsonify({'error': 'failed to query dynamodb'}), 500
+
+    if model_response['Items'] is None:
+        return jsonify({'error': 'model id not found'}), 400
+    gridAddress = model_response['Items'][0]['nodeURL']
+    gridAddress = gridAddress + ':5000'
+    print(gridAddress)
+    grid = ModelCentricFLClient(id="test", address=gridAddress, secure=False)
+    grid.connect()
 
     client_config = {
         "name": name,
@@ -136,7 +166,7 @@ def send_model():
         ]
     )
 
-    response = node.host_federated_training(
+    response = grid.host_federated_training(
         model=model_params_state,
         client_plans={'training_plan': training_plan},
         client_protocols={},
@@ -145,11 +175,14 @@ def send_model():
         server_config=server_config
     )
 
+    return print("Host response:", response)
+
+
 def validate_user(model_id, owner):
 
     user_table = dynamodb.Table('user_table')
     try:
-        user_response = user_table.get_item(Key={'user_id': owner})
+        user_response = user_table.query(KeyConditionExpression=Key('user_id').eq(owner))
     except:
         return jsonify({'error': 'failed to query dynamodb'}), 500
 

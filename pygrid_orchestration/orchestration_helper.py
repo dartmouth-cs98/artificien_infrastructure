@@ -2,6 +2,7 @@ import os
 import json
 from aws_cdk import core
 from pygrid_node_stack import PygridNodeStack
+from ecs_cluster_stack import EcsClusterStack
 import boto3
 import json
 
@@ -15,19 +16,20 @@ class AppFactory():
     )
     return
   def make_standard_stack(self, stack_name):
-    PygridNodeStack(self.app, stack_name)
+    ecs_cluster_stack = EcsClusterStack(self.app, 'ecsCluster')
+    PygridNodeStack(self.app, stack_name, vpc=ecs_cluster_stack.vpc, cluster=ecs_cluster_stack.cluster,)
   def generate_stack(self):
     self.generated = self.app.synth()
   def launch_stack(self):
     for stack in self.generated.stacks:
-      params = {
-        'StackName': stack.name,
-        'TemplateBody': str(stack.template),
-        'Parameters': [],
-        'Capabilities': ['CAPABILITY_IAM','CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
-      }
-      response = client.create_stack(**params)
-      #print(response)
+      if stack.name != 'ecsCluster':
+        params = {
+          'StackName': stack.name,
+          'TemplateBody': str(stack.template),
+          'Parameters': [],
+          'Capabilities': ['CAPABILITY_IAM','CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
+        }
+        response = client.create_stack(**params)
 
   def delete_stack(self):
     for stack in self.generated.stacks:

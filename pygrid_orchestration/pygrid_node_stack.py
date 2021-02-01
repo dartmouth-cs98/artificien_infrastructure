@@ -10,20 +10,16 @@ from aws_cdk import (
 
 class PygridNodeStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, cluster: ecs.Cluster, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.vpc = ec2.Vpc(self , "PygridVPC", max_azs=2)
-
-        self.cluster = ecs.Cluster(self, 'PyGridCluster',
-            vpc=self.vpc
-        )
+        # Create an AWS Aurora Database
 
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
-            self, 
+            self,
             'PyGridService',
             # Resources
-            cluster=self.cluster,
+            cluster=cluster,
             cpu=512,
             memory_limit_mib=2048,
             desired_count=1,
@@ -55,7 +51,7 @@ class PygridNodeStack(cdk.Stack):
             ),
             load_balancer=load_balancer.NetworkLoadBalancer(
                 self, 'PyGridLoadBalancer',
-                vpc=self.vpc,
+                vpc=vpc,
                 internet_facing=True,
                 cross_zone_enabled=True
             )
@@ -69,13 +65,13 @@ class PygridNodeStack(cdk.Stack):
             string_representation='All'
         )
         self.service.service.connections.allow_from_any_ipv4(all_ports)
-        
+
         # Health Check
         self.service.target_group.configure_health_check(
             port='traffic-port',
             protocol=load_balancer.Protocol.TCP
         )
-        
+
         # Get domain name of load balancer and output it to the console
         self.load_balancer_endpoint = self.service.load_balancer.load_balancer_dns_name
         cdk.CfnOutput(self, 'PyGridNodeLoadBalancerDNS', value=self.service.load_balancer.load_balancer_dns_name)

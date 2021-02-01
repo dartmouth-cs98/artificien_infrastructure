@@ -8,17 +8,17 @@
         "id": "Tree",
         "path": "Tree"
       },
-      "perceptron": {
-        "id": "perceptron",
-        "path": "perceptron",
+      "ecsCluster": {
+        "id": "ecsCluster",
+        "path": "ecsCluster",
         "children": {
           "PygridVPC": {
             "id": "PygridVPC",
-            "path": "perceptron/PygridVPC",
+            "path": "ecsCluster/PygridVPC",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "perceptron/PygridVPC/Resource",
+                "path": "ecsCluster/PygridVPC/Resource",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::EC2::VPC",
                   "aws:cdk:cloudformation:props": {
@@ -29,7 +29,7 @@
                     "tags": [
                       {
                         "key": "Name",
-                        "value": "perceptron/PygridVPC"
+                        "value": "ecsCluster/PygridVPC"
                       }
                     ]
                   }
@@ -37,11 +37,11 @@
               },
               "PublicSubnet1": {
                 "id": "PublicSubnet1",
-                "path": "perceptron/PygridVPC/PublicSubnet1",
+                "path": "ecsCluster/PygridVPC/PublicSubnet1",
                 "children": {
                   "Subnet": {
                     "id": "Subnet",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/Subnet",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/Subnet",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
                       "aws:cdk:cloudformation:props": {
@@ -69,7 +69,7 @@
                           },
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet1"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet1"
                           }
                         ]
                       }
@@ -77,11 +77,11 @@
                   },
                   "Acl": {
                     "id": "Acl",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/Acl"
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/Acl"
                   },
                   "RouteTable": {
                     "id": "RouteTable",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/RouteTable",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/RouteTable",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
                       "aws:cdk:cloudformation:props": {
@@ -91,7 +91,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet1"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet1"
                           }
                         ]
                       }
@@ -99,7 +99,7 @@
                   },
                   "RouteTableAssociation": {
                     "id": "RouteTableAssociation",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/RouteTableAssociation",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/RouteTableAssociation",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
                       "aws:cdk:cloudformation:props": {
@@ -114,7 +114,7 @@
                   },
                   "DefaultRoute": {
                     "id": "DefaultRoute",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/DefaultRoute",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/DefaultRoute",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Route",
                       "aws:cdk:cloudformation:props": {
@@ -130,7 +130,7 @@
                   },
                   "EIP": {
                     "id": "EIP",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/EIP",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/EIP",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::EIP",
                       "aws:cdk:cloudformation:props": {
@@ -138,7 +138,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet1"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet1"
                           }
                         ]
                       }
@@ -146,7 +146,7 @@
                   },
                   "NATGateway": {
                     "id": "NATGateway",
-                    "path": "perceptron/PygridVPC/PublicSubnet1/NATGateway",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet1/NATGateway",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::NatGateway",
                       "aws:cdk:cloudformation:props": {
@@ -162,7 +162,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet1"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet1"
                           }
                         ]
                       }
@@ -172,11 +172,11 @@
               },
               "PublicSubnet2": {
                 "id": "PublicSubnet2",
-                "path": "perceptron/PygridVPC/PublicSubnet2",
+                "path": "ecsCluster/PygridVPC/PublicSubnet2",
                 "children": {
                   "Subnet": {
                     "id": "Subnet",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/Subnet",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/Subnet",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
                       "aws:cdk:cloudformation:props": {
@@ -204,7 +204,7 @@
                           },
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet2"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet2"
                           }
                         ]
                       }
@@ -212,11 +212,11 @@
                   },
                   "Acl": {
                     "id": "Acl",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/Acl"
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/Acl"
                   },
                   "RouteTable": {
                     "id": "RouteTable",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/RouteTable",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/RouteTable",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
                       "aws:cdk:cloudformation:props": {
@@ -226,7 +226,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet2"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet2"
                           }
                         ]
                       }
@@ -234,7 +234,7 @@
                   },
                   "RouteTableAssociation": {
                     "id": "RouteTableAssociation",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/RouteTableAssociation",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/RouteTableAssociation",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
                       "aws:cdk:cloudformation:props": {
@@ -249,7 +249,7 @@
                   },
                   "DefaultRoute": {
                     "id": "DefaultRoute",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/DefaultRoute",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/DefaultRoute",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Route",
                       "aws:cdk:cloudformation:props": {
@@ -265,7 +265,7 @@
                   },
                   "EIP": {
                     "id": "EIP",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/EIP",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/EIP",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::EIP",
                       "aws:cdk:cloudformation:props": {
@@ -273,7 +273,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet2"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet2"
                           }
                         ]
                       }
@@ -281,7 +281,7 @@
                   },
                   "NATGateway": {
                     "id": "NATGateway",
-                    "path": "perceptron/PygridVPC/PublicSubnet2/NATGateway",
+                    "path": "ecsCluster/PygridVPC/PublicSubnet2/NATGateway",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::NatGateway",
                       "aws:cdk:cloudformation:props": {
@@ -297,7 +297,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PublicSubnet2"
+                            "value": "ecsCluster/PygridVPC/PublicSubnet2"
                           }
                         ]
                       }
@@ -307,11 +307,11 @@
               },
               "PrivateSubnet1": {
                 "id": "PrivateSubnet1",
-                "path": "perceptron/PygridVPC/PrivateSubnet1",
+                "path": "ecsCluster/PygridVPC/PrivateSubnet1",
                 "children": {
                   "Subnet": {
                     "id": "Subnet",
-                    "path": "perceptron/PygridVPC/PrivateSubnet1/Subnet",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet1/Subnet",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
                       "aws:cdk:cloudformation:props": {
@@ -339,7 +339,7 @@
                           },
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PrivateSubnet1"
+                            "value": "ecsCluster/PygridVPC/PrivateSubnet1"
                           }
                         ]
                       }
@@ -347,11 +347,11 @@
                   },
                   "Acl": {
                     "id": "Acl",
-                    "path": "perceptron/PygridVPC/PrivateSubnet1/Acl"
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet1/Acl"
                   },
                   "RouteTable": {
                     "id": "RouteTable",
-                    "path": "perceptron/PygridVPC/PrivateSubnet1/RouteTable",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet1/RouteTable",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
                       "aws:cdk:cloudformation:props": {
@@ -361,7 +361,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PrivateSubnet1"
+                            "value": "ecsCluster/PygridVPC/PrivateSubnet1"
                           }
                         ]
                       }
@@ -369,7 +369,7 @@
                   },
                   "RouteTableAssociation": {
                     "id": "RouteTableAssociation",
-                    "path": "perceptron/PygridVPC/PrivateSubnet1/RouteTableAssociation",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet1/RouteTableAssociation",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
                       "aws:cdk:cloudformation:props": {
@@ -384,7 +384,7 @@
                   },
                   "DefaultRoute": {
                     "id": "DefaultRoute",
-                    "path": "perceptron/PygridVPC/PrivateSubnet1/DefaultRoute",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet1/DefaultRoute",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Route",
                       "aws:cdk:cloudformation:props": {
@@ -402,11 +402,11 @@
               },
               "PrivateSubnet2": {
                 "id": "PrivateSubnet2",
-                "path": "perceptron/PygridVPC/PrivateSubnet2",
+                "path": "ecsCluster/PygridVPC/PrivateSubnet2",
                 "children": {
                   "Subnet": {
                     "id": "Subnet",
-                    "path": "perceptron/PygridVPC/PrivateSubnet2/Subnet",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet2/Subnet",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
                       "aws:cdk:cloudformation:props": {
@@ -434,7 +434,7 @@
                           },
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PrivateSubnet2"
+                            "value": "ecsCluster/PygridVPC/PrivateSubnet2"
                           }
                         ]
                       }
@@ -442,11 +442,11 @@
                   },
                   "Acl": {
                     "id": "Acl",
-                    "path": "perceptron/PygridVPC/PrivateSubnet2/Acl"
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet2/Acl"
                   },
                   "RouteTable": {
                     "id": "RouteTable",
-                    "path": "perceptron/PygridVPC/PrivateSubnet2/RouteTable",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet2/RouteTable",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
                       "aws:cdk:cloudformation:props": {
@@ -456,7 +456,7 @@
                         "tags": [
                           {
                             "key": "Name",
-                            "value": "perceptron/PygridVPC/PrivateSubnet2"
+                            "value": "ecsCluster/PygridVPC/PrivateSubnet2"
                           }
                         ]
                       }
@@ -464,7 +464,7 @@
                   },
                   "RouteTableAssociation": {
                     "id": "RouteTableAssociation",
-                    "path": "perceptron/PygridVPC/PrivateSubnet2/RouteTableAssociation",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet2/RouteTableAssociation",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
                       "aws:cdk:cloudformation:props": {
@@ -479,7 +479,7 @@
                   },
                   "DefaultRoute": {
                     "id": "DefaultRoute",
-                    "path": "perceptron/PygridVPC/PrivateSubnet2/DefaultRoute",
+                    "path": "ecsCluster/PygridVPC/PrivateSubnet2/DefaultRoute",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::EC2::Route",
                       "aws:cdk:cloudformation:props": {
@@ -497,14 +497,14 @@
               },
               "IGW": {
                 "id": "IGW",
-                "path": "perceptron/PygridVPC/IGW",
+                "path": "ecsCluster/PygridVPC/IGW",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::EC2::InternetGateway",
                   "aws:cdk:cloudformation:props": {
                     "tags": [
                       {
                         "key": "Name",
-                        "value": "perceptron/PygridVPC"
+                        "value": "ecsCluster/PygridVPC"
                       }
                     ]
                   }
@@ -512,7 +512,7 @@
               },
               "VPCGW": {
                 "id": "VPCGW",
-                "path": "perceptron/PygridVPC/VPCGW",
+                "path": "ecsCluster/PygridVPC/VPCGW",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::EC2::VPCGatewayAttachment",
                   "aws:cdk:cloudformation:props": {
@@ -529,11 +529,11 @@
           },
           "PyGridCluster": {
             "id": "PyGridCluster",
-            "path": "perceptron/PyGridCluster",
+            "path": "ecsCluster/PyGridCluster",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "perceptron/PyGridCluster/Resource",
+                "path": "ecsCluster/PyGridCluster/Resource",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::ECS::Cluster",
                   "aws:cdk:cloudformation:props": {}
@@ -541,6 +541,42 @@
               }
             }
           },
+          "Exports": {
+            "id": "Exports",
+            "path": "ecsCluster/Exports",
+            "children": {
+              "Output{\"Ref\":\"PygridVPCPublicSubnet1Subnet7221F67E\"}": {
+                "id": "Output{\"Ref\":\"PygridVPCPublicSubnet1Subnet7221F67E\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PygridVPCPublicSubnet1Subnet7221F67E\"}"
+              },
+              "Output{\"Ref\":\"PygridVPCPublicSubnet2Subnet663C643C\"}": {
+                "id": "Output{\"Ref\":\"PygridVPCPublicSubnet2Subnet663C643C\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PygridVPCPublicSubnet2Subnet663C643C\"}"
+              },
+              "Output{\"Ref\":\"PygridVPCA12AD5FB\"}": {
+                "id": "Output{\"Ref\":\"PygridVPCA12AD5FB\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PygridVPCA12AD5FB\"}"
+              },
+              "Output{\"Ref\":\"PyGridCluster7B103478\"}": {
+                "id": "Output{\"Ref\":\"PyGridCluster7B103478\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PyGridCluster7B103478\"}"
+              },
+              "Output{\"Ref\":\"PygridVPCPrivateSubnet1Subnet0134B5B4\"}": {
+                "id": "Output{\"Ref\":\"PygridVPCPrivateSubnet1Subnet0134B5B4\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PygridVPCPrivateSubnet1Subnet0134B5B4\"}"
+              },
+              "Output{\"Ref\":\"PygridVPCPrivateSubnet2Subnet5705EC30\"}": {
+                "id": "Output{\"Ref\":\"PygridVPCPrivateSubnet2Subnet5705EC30\"}",
+                "path": "ecsCluster/Exports/Output{\"Ref\":\"PygridVPCPrivateSubnet2Subnet5705EC30\"}"
+              }
+            }
+          }
+        }
+      },
+      "perceptron": {
+        "id": "perceptron",
+        "path": "perceptron",
+        "children": {
           "PyGridLogGroup": {
             "id": "PyGridLogGroup",
             "path": "perceptron/PyGridLogGroup",
@@ -580,10 +616,10 @@
                     "scheme": "internet-facing",
                     "subnets": [
                       {
-                        "Ref": "PygridVPCPublicSubnet1Subnet7221F67E"
+                        "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPublicSubnet1Subnet7221F67E164F838C"
                       },
                       {
-                        "Ref": "PygridVPCPublicSubnet2Subnet663C643C"
+                        "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPublicSubnet2Subnet663C643C5D60C5EE"
                       }
                     ],
                     "type": "network"
@@ -632,7 +668,7 @@
                             "protocol": "TCP",
                             "targetType": "ip",
                             "vpcId": {
-                              "Ref": "PygridVPCA12AD5FB"
+                              "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCA12AD5FB951EAF47"
                             }
                           }
                         }
@@ -832,7 +868,7 @@
                       "aws:cdk:cloudformation:type": "AWS::ECS::Service",
                       "aws:cdk:cloudformation:props": {
                         "cluster": {
-                          "Ref": "PyGridCluster7B103478"
+                          "Fn::ImportValue": "ecsCluster:ExportsOutputRefPyGridCluster7B1034780F600999"
                         },
                         "deploymentConfiguration": {
                           "maximumPercent": 200,
@@ -856,10 +892,10 @@
                             "assignPublicIp": "DISABLED",
                             "subnets": [
                               {
-                                "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+                                "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPrivateSubnet1Subnet0134B5B4FE1EB369"
                               },
                               {
-                                "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+                                "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCPrivateSubnet2Subnet5705EC3025A0ED1F"
                               }
                             ],
                             "securityGroups": [
@@ -906,7 +942,7 @@
                               }
                             ],
                             "vpcId": {
-                              "Ref": "PygridVPCA12AD5FB"
+                              "Fn::ImportValue": "ecsCluster:ExportsOutputRefPygridVPCA12AD5FB951EAF47"
                             }
                           }
                         }
