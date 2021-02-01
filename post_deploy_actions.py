@@ -21,11 +21,11 @@ def get_outputs(stack_name: str):
 
     except ClientError:
         print('Cloudformation Stack might not be deployed yet')
-        return
+        return None
 
     except KeyError:
         print('Cloudformation Outputs for the', stack_name, 'stack are not properly configured')
-        return
+        return None
 
 
 def update_jupyter_dns():
@@ -89,4 +89,4 @@ def delete_temporary_ec2():
 
 # Perform all post-deployment actions
 # update_jupyter_dns()
-delete_temporary_ec2()
+#delete_temporary_ec2()
