@@ -29,7 +29,6 @@ from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
 from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
 
-from .pygrid_node_stack import PygridNodeStack
 
 jsonpickle_numpy.register_handlers()
 
@@ -116,24 +115,24 @@ def model_progress():
     percent_complete = request.json.get('percent_complete')
     model_table = dynamodb.Table('model_table')
 
-    # Update the DynamoDB entry
+    # Debugging
+    print('Got model', model_id, 'from PyGrid, which is', percent_complete)
+
+    # Update the DynamoDB entry for 'percent_complete'
     try:
-        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
+        model = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))['Items'][0]
     except:
         return jsonify({'error': 'failed to query dynamodb'}), 500
-    model_response['Items'][0]['percent_complete'] = percent_complete
-    model_table.put_item(Item=model_response['Items'][0])
 
+    model['percent_complete'] = percent_complete
+    model_table.put_item(Item=model)
+
+    # If the model is done training, retrieve it so that the user can download it
     if percent_complete == 100:
-
         # Do model retrieval
+        retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url = model['node_URL'])
 
-
-        # If there are no models left in the node that aren't done, spin it down
-
-        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
-
-
+        # If all models left in the node are done, spin it down
 
 
 @app.route("/send", methods=["POST"])
@@ -198,11 +197,11 @@ def retrieve(user, model_id, version, node_url):
 
     bucket_url = 'https://s3.console.aws.amazon.com/s3/object/' + s3_bucket_name + '?region=' + region + '&prefix=' + file_name
 
-    # 4. flip is_active boolean on model in dynamo
+    # 3. flip is_active boolean on model in dynamo
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('model_table')
 
-    update_response = table.update_item(
+    update_response_1 = table.update_item(
         Key={'model_id': model_id},
         UpdateExpression="set active_status = :r",
         ExpressionAttributeValues={
@@ -210,26 +209,18 @@ def retrieve(user, model_id, version, node_url):
         },
     )
 
-    update_response = table.update_item(
+    # 4. Add bucket URL to model in Dynamo
+    update_response_2 = table.update_item(
         Key={'model_id': model_id},
-        UpdateExpression="set active_status = :r",
+        UpdateExpression="set download_link = :r",
         ExpressionAttributeValues={
-            ':r': 0,
+            ':r': bucket_url,
         },
     )
 
-    if update_response:
+    if update_response_1 and update_response_2:
         print("UPDATE success")
-
-    # # 5. return response with url
-    return {
-        'statusCode': 200,
-        'isBase64Encoded': False,
-        'headers': {},
-        'body': {'message': 'You\'ve successfully invoked the retrieve model method'},
-        'url': bucket_url
-    }
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=5001)

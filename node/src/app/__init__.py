@@ -58,10 +58,10 @@ def set_database_config(app, test_config=None, verbose=False):
     engine = sqlalchemy.create_engine(start_db_url)
     conn = engine.connect()
     conn.execute("commit")  # cannot create DB from within transaction
-    conn.execute('create database ' + node_id + 'DB')
+    conn.execute('create database ' + node_id + 'db')
     conn.close()
 
-    db_url = os.environ.get("DATABASE_URL") + node_id + 'DB'
+    db_url = os.environ.get("DATABASE_URL") + node_id + 'db'
     migrate = Migrate(app, db)
     if test_config is None:
         if db_url:
