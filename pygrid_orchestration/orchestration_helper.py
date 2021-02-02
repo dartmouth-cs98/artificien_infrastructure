@@ -16,13 +16,13 @@ class AppFactory():
     )
     return
   def make_standard_stack(self, stack_name):
-    ecs_cluster_stack = EcsClusterStack(self.app, 'ecsCluster')
+    ecs_cluster_stack = EcsClusterStack(self.app, 'ecsCluster1')
     PygridNodeStack(self.app, stack_name, vpc=ecs_cluster_stack.vpc, cluster=ecs_cluster_stack.cluster,)
   def generate_stack(self):
     self.generated = self.app.synth()
   def launch_stack(self):
     for stack in self.generated.stacks:
-      if stack.name != 'ecsCluster':
+      if stack.name != 'ecsCluster1':
         params = {
           'StackName': stack.name,
           'TemplateBody': str(stack.template),
