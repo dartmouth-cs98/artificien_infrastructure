@@ -1,5 +1,3 @@
-import string
-import random
 from aws_cdk import (
     core as cdk,
     aws_logs as logs,
@@ -7,61 +5,21 @@ from aws_cdk import (
     aws_ecs as ecs,
     aws_elasticloadbalancingv2 as load_balancer,
     aws_ecs_patterns as ecs_patterns,
-    aws_rds as rds,
 )
-
-
-def create_password():
-    password_characters = set(string.ascii_letters + string.digits + string.punctuation)
-    password_characters -= {'/', '@', '\"'}
-    password_characters = ''.join(password_characters)
-    password = []
-    for x in range(20):
-        password.append(random.choice(password_characters))
-
-    return ''.join(password)
 
 
 class PygridNodeStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, cluster: ecs.Cluster,  **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc,
+                 cluster: ecs.Cluster, db_url: str, **kwargs) -> None:
+
         super().__init__(scope, id, **kwargs)
-
-        # Create the DB password
-        plaintext_pw = create_password()
-        password = cdk.SecretValue.plain_text(
-            plaintext_pw
-        )
-        username = 'pygridUser'
-
-        # Create an AWS Aurora Database
-        self.db = rds.ServerlessCluster(
-            self,
-            'PyGridSQLCluster',
-            engine=rds.DatabaseClusterEngine.AURORA_POSTGRESQL,
-            parameter_group=rds.ParameterGroup.from_parameter_group_name(
-                self, 'ParameterGroup', 'default.aurora-postgresql10'
-            ),
-            vpc=vpc,
-            scaling=rds.ServerlessScalingOptions(
-                auto_pause=cdk.Duration.minutes(10),
-                min_capacity=rds.AuroraCapacityUnit.ACU_2,
-                max_capacity=rds.AuroraCapacityUnit.ACU_8,
-            ),
-            default_database_name='pygridDB',
-            credentials=rds.Credentials.from_password(
-                username=username,
-                password=password
-            )
-        )
-
-        # Get the URL for the database
-        db_url = 'postgresql://' + username + ':' + plaintext_pw + '@' + self.db.cluster_endpoint.hostname
 
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
             self, 
             'PyGridService',
-            # Resources
+            # Resource
+
             cluster=cluster,
             cpu=512,
             memory_limit_mib=2048,
@@ -75,9 +33,9 @@ class PygridNodeStack(cdk.Stack):
             task_image_options=ecs_patterns.NetworkLoadBalancedTaskImageOptions(
                 container_name='pygrid_node',
                 container_port=5000,
-                image=ecs.ContainerImage.from_registry('openmined/grid-node:production'),
+                image=ecs.ContainerImage.from_asset('./node'),
                 environment={
-                    'NODE_ID': 'node0',
+                    'NODE_ID': id,  # Use stack ID as node ID
                     'ADDRESS': 'http://localhost:5000',
                     'PORT': '5000',
                     'DATABASE_URL': db_url
@@ -117,6 +75,3 @@ class PygridNodeStack(cdk.Stack):
         
         # Get domain name of load balancer and output it to the console
         cdk.CfnOutput(self, 'PyGridNodeLoadBalancerDNS', value=self.service.load_balancer.load_balancer_dns_name)
-
-        # Get access point to RDS cluster and output it to console
-        cdk.CfnOutput(self, 'rdsEndpoint', value=self.db.cluster_endpoint.hostname)
