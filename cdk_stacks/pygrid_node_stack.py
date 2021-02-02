@@ -15,10 +15,6 @@ class PygridNodeStack(cdk.Stack):
 
         super().__init__(scope, id, **kwargs)
 
-        # default_db_name = 'pygridDB'
-        # db_url = db_url
-        # print(db_url)
-
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
             self, 
             'PyGridService',
@@ -38,7 +34,6 @@ class PygridNodeStack(cdk.Stack):
                 container_name='pygrid_node',
                 container_port=5000,
                 image=ecs.ContainerImage.from_asset('./node'),
-                # image=ecs.ContainerImage.from_registry('openmined/grid-node:production'),
                 environment={
                     'NODE_ID': id,  # Use stack ID as node ID
                     'ADDRESS': 'http://localhost:5000',
@@ -62,8 +57,6 @@ class PygridNodeStack(cdk.Stack):
                 cross_zone_enabled=True
             )
         )
-
-        self.whatever = db_url
 
         # Allow ingress
         all_ports = ec2.Port(
