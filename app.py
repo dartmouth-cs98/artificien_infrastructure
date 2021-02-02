@@ -57,7 +57,7 @@ jupyter_stack = JupyterServiceStack(
 # Launch ECS cluster to host Pygrid in:
 ecs_cluster_stack = EcsClusterStack(
     app,
-    'ecsCluster',
+    'ecsCluster1',
     env=env
 )
 
@@ -67,6 +67,7 @@ pygrid_stack = PygridNodeStack(
     'pygrid',
     vpc=ecs_cluster_stack.vpc,
     cluster=ecs_cluster_stack.cluster,
+    db_url=ecs_cluster_stack.db_url,
     env=env
 )
 
