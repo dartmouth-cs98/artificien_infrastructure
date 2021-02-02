@@ -1,34 +1,36 @@
-from syft.frameworks.torch.hook import hook
+import json
+import os
+import shlex
+import subprocess
+from datetime import date
 
 import boto3
+import requests
+import syft as sy
+import torch as th
+import websockets
+import torch as th
 from boto3.dynamodb.conditions import Key
 from flask import Flask, jsonify, request
-from pygrid_node_stack import PygridNodeStack
-from aws_cdk import core
-from post_deploy_actions import get_outputs
-import os
-import syft as sy
-from syft.serde import protobuf
-from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
-from syft_proto.execution.v1.state_pb2 import State as StatePB
-from syft.grid.clients.model_centric_fl_client import ModelCentricFLClient
-from syft.execution.state import State
 from syft.execution.placeholder import PlaceHolder
+from syft.execution.state import State
 from syft.execution.translation import TranslationTarget
-from orchestration_helper import AppFactory
-import subprocess
-import shlex
-import jsonpickle
-
-from datetime import date
-import torch as th
+from syft.frameworks.torch.hook import hook
+from syft.grid.clients.model_centric_fl_client import ModelCentricFLClient
+from syft.serde import protobuf
 from torch import nn
 
+import jsonpickle
+from aws_cdk import core
+from jsonpickle.ext import numpy as jsonpickle_numpy
+from orchestration_helper import AppFactory
+from post_deploy_actions import get_outputs
+from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
+from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
-import websockets
-import json
-import requests
-import jsonpickle.ext.numpy as jsonpickle_numpy
+
+from .pygrid_node_stack import PygridNodeStack
+
 jsonpickle_numpy.register_handlers()
 
 sy.make_hook(globals())
@@ -39,19 +41,21 @@ app = Flask(__name__)
 region_name = "us-east-1"
 
 try:
-  ecs_client = boto3.client('ecs')
+    ecs_client = boto3.client('ecs')
 
 except BaseException as exe:
     print(exe)
 
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 
-#check api status, ping to test
+
+# check api status, ping to test
 @app.route("/")
 def status():
     return "Running"
 
-#spin up a new node for an app developer
+
+# spin up a new node for an app developer
 @app.route("/create", methods=["POST"])
 def create_node():
     # grab model id, query model_table to check if a node has already been spun up for model
@@ -79,10 +83,10 @@ def create_node():
         model_table.put_item(Item=model_response['Items'][0])
         return jsonify({'status': 'ready'})
 
-    #if node hasn't been loaded yet, first validate the user has access to data
+    # if node hasn't been loaded yet, first validate the user has access to data
     owner = model_response['Items'][0]['owner_name']
-   #if validate_user(model_id, owner) is False:
-   #     return jsonify({'error': 'user has not purchased requested dataset'}), 600
+    # if validate_user(model_id, owner) is False:
+    #     return jsonify({'error': 'user has not purchased requested dataset'}), 600
 
     # deploy resources
     app_factory = AppFactory()
@@ -96,36 +100,66 @@ def create_node():
     model_table.put_item(Item=model_response['Items'][0])
     return jsonify({'status': 'node is starting to deploy. This may take a few minutes'})
 
-#delete node of an app developer
+
+# delete node of an app developer
 @app.route("/delete", methods=["POST"])
 def delete_node():
     return None
 
+
+@app.route("/model_progress", methods=["POST"])
+def model_progress():
+    """ Updates the percent complete attribute of a model, and retrieves the model if it is done training """
+
+    # Get the new model complete metric from PyGrid
+    model_id = request.json.get('model_id')
+    percent_complete = request.json.get('percent_complete')
+    model_table = dynamodb.Table('model_table')
+
+    # Update the DynamoDB entry
+    try:
+        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
+    except:
+        return jsonify({'error': 'failed to query dynamodb'}), 500
+    model_response['Items'][0]['percent_complete'] = percent_complete
+    model_table.put_item(Item=model_response['Items'][0])
+
+    if percent_complete == 100:
+
+        # Do model retrieval
+
+
+        # If there are no models left in the node that aren't done, spin it down
+
+        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
+
+
+
+
 @app.route("/send", methods=["POST"])
 def send_model():
-    #model_table = dynamodb.Table('model_table')
-    #model_pkl = request.json.get('model')
-    #x_pkl = request.json.get('x')
-    #y_pkl = request.json.get('y')
-    #training_plan_pkl = request.json.get('training_plan_func')
-    #optim_func_pkl = request.json.get('optim')
-    #loss_func_pkl = request.json.get('loss')
-    #model = jsonpickle.encode(model_pkl)
-    #x = jsonpickle.decode(x_pkl)
-    #y = jsonpickle.decode(y_pkl)
-    #training_plan = jsonpickle.decode(training_plan_pkl)
-    #optim_func = jsonpickle.decode(optim_func_pkl)
-    #loss_func = jsonpickle.decode(loss_func_pkl)
+    # model_table = dynamodb.Table('model_table')
+    # model_pkl = request.json.get('model')
+    # x_pkl = request.json.get('x')
+    # y_pkl = request.json.get('y')
+    # training_plan_pkl = request.json.get('training_plan_func')
+    # optim_func_pkl = request.json.get('optim')
+    # loss_func_pkl = request.json.get('loss')
+    # model = jsonpickle.encode(model_pkl)
+    # x = jsonpickle.decode(x_pkl)
+    # y = jsonpickle.decode(y_pkl)
+    # training_plan = jsonpickle.decode(training_plan_pkl)
+    # optim_func = jsonpickle.decode(optim_func_pkl)
+    # loss_func = jsonpickle.decode(loss_func_pkl)
 
-    #model_params, training_plan = syftfunctions.def_training_plan(model, x, y, None)
-    #avg_plan = syftfunctions.def_avg_plan(model_params, None)
-    #grid = syftfunctions.artificien_connect()
-    #syftfunctions.send_model("perceptron", "0.1.1", "5", "0.5", "10", model_params, grid, training_plan, avg_plan)
+    # model_params, training_plan = syftfunctions.def_training_plan(model, x, y, None)
+    # avg_plan = syftfunctions.def_avg_plan(model_params, None)
+    # grid = syftfunctions.artificien_connect()
+    # syftfunctions.send_model("perceptron", "0.1.1", "5", "0.5", "10", model_params, grid, training_plan, avg_plan)
     return None
 
 
 def validate_user(model_id, owner):
-
     user_table = dynamodb.Table('user_table')
     try:
         user_response = user_table.query(KeyConditionExpression=Key('user_id').eq(owner))
@@ -140,12 +174,62 @@ def validate_user(model_id, owner):
         return True
     return False
 
+
+def retrieve(user, model_id, version, node_url):
+
+    # 1. get pygrid model
+    payload = {
+        "name": model_id,
+        "version": version,
+        "checkpoint": "latest"
+    }
+
+    url = node_url + "/model-centric/retrieve-model"
+    r = requests.get(url, params=payload)
+    th.save(r.content, '/tmp/model.pkl')  # only the /tmp directory in lambda is writable
+
+    # 2. Put model in s3 bucket
+    s3 = boto3.client('s3')
+    s3_bucket_name = os.environ['S3_BUCKET']
+    region = os.environ['AWS_REGION']
+    file_name = user + model_id + version + '/tmp/model.pkl'
+    s3.upload_file('/tmp/model.pkl', s3_bucket_name, file_name)
+    print('done!')
+
+    bucket_url = 'https://s3.console.aws.amazon.com/s3/object/' + s3_bucket_name + '?region=' + region + '&prefix=' + file_name
+
+    # 4. flip is_active boolean on model in dynamo
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.Table('model_table')
+
+    update_response = table.update_item(
+        Key={'model_id': model_id},
+        UpdateExpression="set active_status = :r",
+        ExpressionAttributeValues={
+            ':r': 0,
+        },
+    )
+
+    update_response = table.update_item(
+        Key={'model_id': model_id},
+        UpdateExpression="set active_status = :r",
+        ExpressionAttributeValues={
+            ':r': 0,
+        },
+    )
+
+    if update_response:
+        print("UPDATE success")
+
+    # # 5. return response with url
+    return {
+        'statusCode': 200,
+        'isBase64Encoded': False,
+        'headers': {},
+        'body': {'message': 'You\'ve successfully invoked the retrieve model method'},
+        'url': bucket_url
+    }
+
+
 if __name__ == '__main__':
     app.run()
-
-
-
-
-
-
-

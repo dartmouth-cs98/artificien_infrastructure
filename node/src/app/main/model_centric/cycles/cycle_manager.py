@@ -1,4 +1,5 @@
 # Cycle module imports
+import os
 import json
 import logging
 
@@ -313,6 +314,13 @@ class CycleManager:
         )
         logging.info("completed_cycles_num: %d" % completed_cycles_num)
         max_cycles = server_config.get("num_cycles", 0)
+
+        # Report the model progress (percent done at the end of each cycle) to the orchestration node
+        node_id = os.environ.get("NODE_ID")
+        percent_done = (completed_cycles_num * 100) // max_cycles
+        orchestration_endpoint = os.environ.get("MASTER_NODE_URL") + '/model_progress'
+
+
         if completed_cycles_num < max_cycles or max_cycles == 0:
             # make new cycle
             _new_cycle = self.create(
@@ -320,4 +328,5 @@ class CycleManager:
             )
             logging.info("new cycle: %s" % str(_new_cycle))
         else:
+            # TODO - Figure out a way to delete models from SQL, if this is not somehow already happening
             logging.info("FL is done!")
