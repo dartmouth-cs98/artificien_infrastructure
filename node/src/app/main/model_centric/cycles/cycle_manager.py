@@ -316,13 +316,17 @@ class CycleManager:
         logging.info("completed_cycles_num: %d" % completed_cycles_num)
         max_cycles = server_config.get("num_cycles", 0)
 
-        # Artificien NEW: Report the model progress (percent done at the end of each cycle) to the orchestration node
+        # START EDIT: Report the model progress (percent done at the end of each cycle) to the orchestration node
         orchestration_endpoint = os.environ.get("MASTER_NODE_URL") + '/model_progress'
         data = {
-            'percent_done': (completed_cycles_num * 100) // max_cycles
+            'percent_complete': (completed_cycles_num * 100) // max_cycles,
+            'model_id': model_id
         }
-        requests.post(url=orchestration_endpoint, json=data)
-        # End edit
+        try:
+            requests.post(url=orchestration_endpoint, json=data)
+        except requests.exceptions.RequestException as e:
+            print('Could not connect to master node')
+        # END EDIT
 
         if completed_cycles_num < max_cycles or max_cycles == 0:
             # make new cycle

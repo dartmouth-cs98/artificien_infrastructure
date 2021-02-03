@@ -21,7 +21,6 @@ from syft.serde import protobuf
 from torch import nn
 
 import jsonpickle
-from aws_cdk import core
 from jsonpickle.ext import numpy as jsonpickle_numpy
 from orchestration_helper import AppFactory
 from post_deploy_actions import get_outputs
@@ -116,7 +115,7 @@ def model_progress():
     model_table = dynamodb.Table('model_table')
 
     # Debugging
-    print('Got model', model_id, 'from PyGrid, which is', percent_complete)
+    print('Got model', model_id, 'from PyGrid, which is', percent_complete, 'percent complete')
 
     # Update the DynamoDB entry for 'percent_complete'
     try:
@@ -130,9 +129,11 @@ def model_progress():
     # If the model is done training, retrieve it so that the user can download it
     if percent_complete == 100:
         # Do model retrieval
-        retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url = model['node_URL'])
+        retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url=model['node_URL'])
 
         # If all models left in the node are done, spin it down
+
+    return jsonify({'status': 'model completion was updated successfully'})
 
 
 @app.route("/send", methods=["POST"])
@@ -189,8 +190,8 @@ def retrieve(user, model_id, version, node_url):
 
     # 2. Put model in s3 bucket
     s3 = boto3.client('s3')
-    s3_bucket_name = os.environ['S3_BUCKET']
-    region = os.environ['AWS_REGION']
+    region = region_name
+    s3_bucket_name = "artificien-retrieved-models-storage"
     file_name = user + model_id + version + '/tmp/model.pkl'
     s3.upload_file('/tmp/model.pkl', s3_bucket_name, file_name)
     print('done!')
