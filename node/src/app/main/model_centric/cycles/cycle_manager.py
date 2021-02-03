@@ -2,6 +2,7 @@
 import os
 import json
 import logging
+import requests
 
 # Generic imports
 from datetime import datetime, timedelta
@@ -315,11 +316,17 @@ class CycleManager:
         logging.info("completed_cycles_num: %d" % completed_cycles_num)
         max_cycles = server_config.get("num_cycles", 0)
 
-        # Report the model progress (percent done at the end of each cycle) to the orchestration node
-        node_id = os.environ.get("NODE_ID")
-        percent_done = (completed_cycles_num * 100) // max_cycles
+        # START EDIT: Report the model progress (percent done at the end of each cycle) to the orchestration node
         orchestration_endpoint = os.environ.get("MASTER_NODE_URL") + '/model_progress'
-
+        data = {
+            'percent_complete': (completed_cycles_num * 100) // max_cycles,
+            'model_id': model_id
+        }
+        try:
+            requests.post(url=orchestration_endpoint, json=data)
+        except requests.exceptions.RequestException as e:
+            print('Could not connect to master node')
+        # END EDIT
 
         if completed_cycles_num < max_cycles or max_cycles == 0:
             # make new cycle

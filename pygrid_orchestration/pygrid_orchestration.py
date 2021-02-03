@@ -21,7 +21,6 @@ from syft.serde import protobuf
 from torch import nn
 
 import jsonpickle
-from aws_cdk import core
 from jsonpickle.ext import numpy as jsonpickle_numpy
 from orchestration_helper import AppFactory
 from post_deploy_actions import get_outputs
@@ -29,7 +28,10 @@ from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
 from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
 
+<<<<<<< HEAD
 from pygrid_node_stack import PygridNodeStack
+=======
+>>>>>>> f76e06f2d0ac04c899bf43cbd80ca640e988582b
 
 jsonpickle_numpy.register_handlers()
 
@@ -132,22 +134,27 @@ def model_progress():
     percent_complete = request.json.get('percent_complete')
     model_table = dynamodb.Table('model_table')
 
-    # Update the DynamoDB entry
+    # Debugging
+    print('Got model', model_id, 'from PyGrid, which is', percent_complete, 'percent complete')
+
+    # Update the DynamoDB entry for 'percent_complete'
     try:
-        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
+        model = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))['Items'][0]
     except:
         return jsonify({'error': 'failed to query dynamodb'}), 500
-    model_response['Items'][0]['percent_complete'] = percent_complete
-    model_table.put_item(Item=model_response['Items'][0])
 
+    model['percent_complete'] = percent_complete
+    model_table.put_item(Item=model)
+
+    # If the model is done training, retrieve it so that the user can download it
     if percent_complete == 100:
-
         # Do model retrieval
+        retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url=model['node_URL'])
 
+        # If all models left in the node are done, spin it down
 
-        # If there are no models left in the node that aren't done, spin it down
+    return jsonify({'status': 'model completion was updated successfully'})
 
-        model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
 
 
 @app.route("/syft", methods=["POST"])
@@ -201,46 +208,30 @@ def retrieve(user, model_id, version, node_url):
 
     # 2. Put model in s3 bucket
     s3 = boto3.client('s3')
-    s3_bucket_name = os.environ['S3_BUCKET']
-    region = os.environ['AWS_REGION']
+    region = region_name
+    s3_bucket_name = "artificien-retrieved-models-storage"
     file_name = user + model_id + version + '/tmp/model.pkl'
     s3.upload_file('/tmp/model.pkl', s3_bucket_name, file_name)
     print('done!')
 
     bucket_url = 'https://s3.console.aws.amazon.com/s3/object/' + s3_bucket_name + '?region=' + region + '&prefix=' + file_name
 
-    # 4. flip is_active boolean on model in dynamo
+    # 3. flip is_active boolean on model in dynamo
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('model_table')
 
+    # 4. Add bucket URL to model in Dynamo
     update_response = table.update_item(
         Key={'model_id': model_id},
-        UpdateExpression="set active_status = :r",
+        UpdateExpression="set download_link = :r",
         ExpressionAttributeValues={
-            ':r': 0,
-        },
-    )
-
-    update_response = table.update_item(
-        Key={'model_id': model_id},
-        UpdateExpression="set active_status = :r",
-        ExpressionAttributeValues={
-            ':r': 0,
+            ':r': bucket_url,
         },
     )
 
     if update_response:
         print("UPDATE success")
 
-    # # 5. return response with url
-    return {
-        'statusCode': 200,
-        'isBase64Encoded': False,
-        'headers': {},
-        'body': {'message': 'You\'ve successfully invoked the retrieve model method'},
-        'url': bucket_url
-    }
-
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=5001)
