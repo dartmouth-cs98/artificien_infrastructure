@@ -29,7 +29,7 @@ from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
 from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
 
-from .pygrid_node_stack import PygridNodeStack
+from pygrid_node_stack import PygridNodeStack
 
 jsonpickle_numpy.register_handlers()
 
@@ -60,7 +60,9 @@ def status():
 def create_node():
     # grab model id, query model_table to check if a node has already been spun up for model
     model_table = dynamodb.Table('model_table')
+    dataset_table = dynamodb.Table('dataset_table')
     model_id = request.json.get('model_id')
+    dataset_id = request.json.get('dataset_id')
     model_id = model_id.lower()
     print(model_id)
     try:
@@ -72,15 +74,29 @@ def create_node():
     if model_response['Items'] is None:
         return jsonify({'error': 'model id not found'}), 400
 
+    try:
+        dataset_response = dataset_table.query(KeyConditionExpression=Key('dataset_id').eq(dataset_id))
+    except:
+        return jsonify({'error': 'failed to query dynamodb'}), 500
+    print(dataset_response)
+
+    if dataset_response['Items'] is None:
+        return jsonify({'error': 'dataset_id not found'}), 400
+
     # if model hasNode, check if node is fully deployed
-    if model_response['Items'][0]['hasNode'] is True:
-        output_dict = get_outputs(stack_name=model_id)
+    if dataset_response['Items'][0]['hasNode'] is True:
+        output_dict = get_outputs(stack_name=dataset_id)
         if output_dict is None:
             return jsonify({'status': 'node is deploying, please try later'})
         nodeURL = output_dict['PyGridNodeLoadBalancerDNS']
-        # put nodeAddress into DB
+
+        # put nodeAddress into DBd
         model_response['Items'][0]['node_URL'] = nodeURL
         model_table.put_item(Item=model_response['Items'][0])
+
+        dataset_response['Items'][0]['nodeURL'] = nodeURL
+        dataset_table.put_item(Item=dataset_response['Items'][0])
+
         return jsonify({'status': 'ready'})
 
     # if node hasn't been loaded yet, first validate the user has access to data
@@ -90,14 +106,14 @@ def create_node():
 
     # deploy resources
     app_factory = AppFactory()
-    app_factory.make_standard_stack(model_id)
+    app_factory.make_standard_stack(dataset_id)
     app_factory.generate_stack()
     app_factory.launch_stack()
     print("Deploying")
 
     # set hasNode to true
-    model_response['Items'][0]['hasNode'] = True
-    model_table.put_item(Item=model_response['Items'][0])
+    dataset_response['Items'][0]['hasNode'] = True
+    dataset_table.put_item(Item=dataset_response['Items'][0])
     return jsonify({'status': 'node is starting to deploy. This may take a few minutes'})
 
 
@@ -134,30 +150,26 @@ def model_progress():
         model_response = model_table.query(KeyConditionExpression=Key('model_id').eq(model_id))
 
 
+@app.route("/syft", methods=["POST"])
+def get_info():
+    dataset_id = request.json.get('dataset_id')
+    dataset_table = dynamodb.Table('dataset_table')
+    model_table = dynamodb.Table('model_table')
 
+    try:
+        dataset_response = dataset_table.query(KeyConditionExpression=Key('dataset_id').eq(dataset_id))
+    except:
+        return jsonify({'error': 'failed to query dynamodb'}), 500
 
-@app.route("/send", methods=["POST"])
-def send_model():
-    # model_table = dynamodb.Table('model_table')
-    # model_pkl = request.json.get('model')
-    # x_pkl = request.json.get('x')
-    # y_pkl = request.json.get('y')
-    # training_plan_pkl = request.json.get('training_plan_func')
-    # optim_func_pkl = request.json.get('optim')
-    # loss_func_pkl = request.json.get('loss')
-    # model = jsonpickle.encode(model_pkl)
-    # x = jsonpickle.decode(x_pkl)
-    # y = jsonpickle.decode(y_pkl)
-    # training_plan = jsonpickle.decode(training_plan_pkl)
-    # optim_func = jsonpickle.decode(optim_func_pkl)
-    # loss_func = jsonpickle.decode(loss_func_pkl)
+    nodeURL = dataset_response['Items'][0]['nodeURL']
 
-    # model_params, training_plan = syftfunctions.def_training_plan(model, x, y, None)
-    # avg_plan = syftfunctions.def_avg_plan(model_params, None)
-    # grid = syftfunctions.artificien_connect()
-    # syftfunctions.send_model("perceptron", "0.1.1", "5", "0.5", "10", model_params, grid, training_plan, avg_plan)
-    return None
+    try:
+        model_response = model_table.query(KeyConditionExpression=Key('dataset').eq(dataset_id))
+    except:
+        return jsonify({'error': 'failed to query dynamodb'}), 500
 
+    models = model_response['Items']
+    return jsonify({'models': models, 'nodeURL': nodeURL})
 
 def validate_user(model_id, owner):
     user_table = dynamodb.Table('user_table')
@@ -173,7 +185,6 @@ def validate_user(model_id, owner):
     if model_id in purchases:
         return True
     return False
-
 
 def retrieve(user, model_id, version, node_url):
 
