@@ -28,10 +28,6 @@ from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
 from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
 
-<<<<<<< HEAD
-from pygrid_node_stack import PygridNodeStack
-=======
->>>>>>> f76e06f2d0ac04c899bf43cbd80ca640e988582b
 
 jsonpickle_numpy.register_handlers()
 
@@ -149,7 +145,10 @@ def model_progress():
     # If the model is done training, retrieve it so that the user can download it
     if percent_complete == 100:
         # Do model retrieval
-        retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url=model['node_URL'])
+        try:
+            retrieve(user=model['owner_name'], model_id=model_id, version=model['version'], node_url=model['node_URL'])
+        except:
+            return jsonify({'error': 'failed to perform model retrieval'}), 500
 
         # If all models left in the node are done, spin it down
 
