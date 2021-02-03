@@ -38,7 +38,8 @@ class PygridNodeStack(cdk.Stack):
                     'NODE_ID': id.lower(),  # Use stack ID as node ID
                     'ADDRESS': 'http://localhost:5000',
                     'PORT': '5000',
-                    'DATABASE_URL': db_url
+                    'DATABASE_URL': db_url,
+                    'MASTER_NODE_URL': 'unknown',
                 },
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(

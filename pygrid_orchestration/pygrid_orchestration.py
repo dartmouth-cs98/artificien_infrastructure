@@ -202,16 +202,8 @@ def retrieve(user, model_id, version, node_url):
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('model_table')
 
-    update_response_1 = table.update_item(
-        Key={'model_id': model_id},
-        UpdateExpression="set active_status = :r",
-        ExpressionAttributeValues={
-            ':r': 0,
-        },
-    )
-
     # 4. Add bucket URL to model in Dynamo
-    update_response_2 = table.update_item(
+    update_response = table.update_item(
         Key={'model_id': model_id},
         UpdateExpression="set download_link = :r",
         ExpressionAttributeValues={
@@ -219,7 +211,7 @@ def retrieve(user, model_id, version, node_url):
         },
     )
 
-    if update_response_1 and update_response_2:
+    if update_response:
         print("UPDATE success")
 
 
