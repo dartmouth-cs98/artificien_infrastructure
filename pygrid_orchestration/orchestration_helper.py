@@ -10,16 +10,25 @@ client = boto3.client('cloudformation')
 
 class AppFactory():
   location = os.path.dirname(os.path.abspath(__file__))
+
   def __init__(self):
-    self.app = core.App(
-      outdir=self.location + '/output/'
-    )
+    self.app = core.App(outdir=self.location + '/output/')
+    self.generated = {}
     return
+
   def make_standard_stack(self, stack_name):
     ecs_cluster_stack = EcsClusterStack(self.app, 'ecsCluster1')
-    PygridNodeStack(self.app, stack_name, vpc=ecs_cluster_stack.vpc, cluster=ecs_cluster_stack.cluster,)
+    PygridNodeStack(
+      self.app,
+      stack_name,
+      vpc=ecs_cluster_stack.vpc,
+      cluster=ecs_cluster_stack.cluster,
+      db_url=ecs_cluster_stack.db_url
+    )
+
   def generate_stack(self):
     self.generated = self.app.synth()
+
   def launch_stack(self):
     for stack in self.generated.stacks:
       if stack.name != 'ecsCluster1':

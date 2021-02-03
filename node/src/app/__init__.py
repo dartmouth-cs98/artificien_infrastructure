@@ -52,16 +52,26 @@ def set_database_config(app, test_config=None, verbose=False):
     Raises:
         RuntimeError : If DATABASE_URL or test_config didn't initialize, RuntimeError exception will be raised.
     """
-    # Create the database via the default postgres db
-    node_id = os.environ.get("NODE_ID")
-    start_db_url = os.environ.get("DATABASE_URL") + 'postgres'
-    engine = sqlalchemy.create_engine(start_db_url)
-    conn = engine.connect()
-    conn.execute("commit")  # cannot create DB from within transaction
-    conn.execute('create database ' + node_id + 'DB')
-    conn.close()
+    # Create the database via the default postgres db (if it doesn't yet exist)
 
-    db_url = os.environ.get("DATABASE_URL") + node_id + 'DB'
+    node_id = os.environ.get("NODE_ID")
+    db_url = os.environ.get("DATABASE_URL") + node_id + 'db'
+
+    try:
+        # Check if DB exists
+        engine = sqlalchemy.create_engine(db_url)
+        conn = engine.connect()
+        conn.close()
+
+    except sqlalchemy.exc.OperationalError:
+        # If it doesn't create the DB
+        start_db_url = os.environ.get("DATABASE_URL") + 'postgres'
+        engine = sqlalchemy.create_engine(start_db_url)
+        conn = engine.connect()
+        conn.execute("commit")  # cannot create DB from within transaction
+        conn.execute('create database ' + node_id + 'db')
+        conn.close()
+
     migrate = Migrate(app, db)
     if test_config is None:
         if db_url:

@@ -1,6 +1,8 @@
 # Cycle module imports
+import os
 import json
 import logging
+import requests
 
 # Generic imports
 from datetime import datetime, timedelta
@@ -313,6 +315,19 @@ class CycleManager:
         )
         logging.info("completed_cycles_num: %d" % completed_cycles_num)
         max_cycles = server_config.get("num_cycles", 0)
+
+        # START EDIT: Report the model progress (percent done at the end of each cycle) to the orchestration node
+        orchestration_endpoint = os.environ.get("MASTER_NODE_URL") + '/model_progress'
+        data = {
+            'percent_complete': (completed_cycles_num * 100) // max_cycles,
+            'model_id': model_id
+        }
+        try:
+            requests.post(url=orchestration_endpoint, json=data)
+        except requests.exceptions.RequestException as e:
+            print('Could not connect to master node')
+        # END EDIT
+
         if completed_cycles_num < max_cycles or max_cycles == 0:
             # make new cycle
             _new_cycle = self.create(
@@ -320,4 +335,5 @@ class CycleManager:
             )
             logging.info("new cycle: %s" % str(_new_cycle))
         else:
+            # TODO - Figure out a way to delete models from SQL, if this is not somehow already happening
             logging.info("FL is done!")

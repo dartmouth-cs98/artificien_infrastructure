@@ -4,21 +4,22 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_elasticloadbalancingv2 as load_balancer,
-    aws_ecs_patterns as ecs_patterns
+    aws_ecs_patterns as ecs_patterns,
 )
 
 
 class PygridNodeStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, cluster: ecs.Cluster, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc,
+                 cluster: ecs.Cluster, db_url: str, **kwargs) -> None:
+
         super().__init__(scope, id, **kwargs)
 
-        # Create an AWS Aurora Database
-
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
-            self,
+            self, 
             'PyGridService',
-            # Resources
+            # Resource
+
             cluster=cluster,
             cpu=512,
             memory_limit_mib=2048,
@@ -32,12 +33,13 @@ class PygridNodeStack(cdk.Stack):
             task_image_options=ecs_patterns.NetworkLoadBalancedTaskImageOptions(
                 container_name='pygrid_node',
                 container_port=5000,
-                image=ecs.ContainerImage.from_registry('openmined/grid-node:production'),
+                image=ecs.ContainerImage.from_asset('./node'),
                 environment={
-                    'NODE_ID': 'node0',
+                    'NODE_ID': id.lower(),  # Use stack ID as node ID
                     'ADDRESS': 'http://localhost:5000',
                     'PORT': '5000',
-                    'DATABASE_URL': 'sqlite:///databasenode.db'
+                    'DATABASE_URL': db_url,
+                    'MASTER_NODE_URL': 'unknown',
                 },
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(
@@ -65,13 +67,12 @@ class PygridNodeStack(cdk.Stack):
             string_representation='All'
         )
         self.service.service.connections.allow_from_any_ipv4(all_ports)
-
+        
         # Health Check
         self.service.target_group.configure_health_check(
             port='traffic-port',
             protocol=load_balancer.Protocol.TCP
         )
-
+        
         # Get domain name of load balancer and output it to the console
-        self.load_balancer_endpoint = self.service.load_balancer.load_balancer_dns_name
         cdk.CfnOutput(self, 'PyGridNodeLoadBalancerDNS', value=self.service.load_balancer.load_balancer_dns_name)
