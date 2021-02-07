@@ -19,7 +19,6 @@ class DataUploadLambda(cdk.Stack):
         bucket_name = 'artificien-fake-dataset-storage'
         self.bucket = s3.Bucket(self, 'FakeDataBucket', bucket_name=bucket_name)
         
-
         # Create the lambda function
         lambda_dir = './lambdas/data_upload_lambda'
         self.lambda_function = aws_lambda.Function(

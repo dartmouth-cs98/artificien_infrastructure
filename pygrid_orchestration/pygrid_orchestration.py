@@ -20,16 +20,12 @@ from syft.grid.clients.model_centric_fl_client import ModelCentricFLClient
 from syft.serde import protobuf
 from torch import nn
 
-import jsonpickle
-from jsonpickle.ext import numpy as jsonpickle_numpy
 from orchestration_helper import AppFactory
 from post_deploy_actions import get_outputs
 from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
 from syft_proto.execution.v1.state_pb2 import State as StatePB
 from websocket import create_connection
 
-
-jsonpickle_numpy.register_handlers()
 
 sy.make_hook(globals())
 hook.local_worker.framework = None  # force protobuf serialization for tensors

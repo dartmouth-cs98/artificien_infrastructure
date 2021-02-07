@@ -104,8 +104,8 @@ class ModelRetrievalLambda(cdk.Stack):
         )
 
         temp_instance = ec2.Instance(
-            self, 'ModelRetrievalLambdaEc2Instance',
-            instance_name='ModelRetrievalLambdaEc2Instance',
+            self, 'ModelRetrievalLambdaEc2Instance1',
+            instance_name='ModelRetrievalLambdaEc2Instance1',
             vpc=vpc,  # same VPC as EFS and lambda
             security_group=lambda_security_group,  # Same security group as lambda so that it can access EFS
             instance_type=ec2.InstanceType('t2.micro'),
