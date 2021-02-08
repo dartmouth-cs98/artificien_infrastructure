@@ -385,6 +385,76 @@
     },
     "PyGridCluster7B103478": {
       "Type": "AWS::ECS::Cluster"
+    },
+    "PostgresSgA0699C41": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "ecsCluster1/PostgresSg",
+        "GroupName": "PostgrestSg",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "from 0.0.0.0/0:5432",
+            "FromPort": 5432,
+            "IpProtocol": "tcp",
+            "ToPort": 5432
+          }
+        ],
+        "VpcId": {
+          "Ref": "PygridVPCA12AD5FB"
+        }
+      }
+    },
+    "PyGridSQLClusterSubnetsE7CFCB43": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Subnets for PyGridSQLCluster database",
+        "SubnetIds": [
+          {
+            "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+          },
+          {
+            "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+          }
+        ]
+      }
+    },
+    "PyGridSQLCluster789ACA39": {
+      "Type": "AWS::RDS::DBCluster",
+      "Properties": {
+        "Engine": "aurora-postgresql",
+        "DatabaseName": "pygridDB",
+        "DBClusterParameterGroupName": "default.aurora-postgresql10",
+        "DBSubnetGroupName": {
+          "Ref": "PyGridSQLClusterSubnetsE7CFCB43"
+        },
+        "EngineMode": "serverless",
+        "MasterUsername": "pygridUser",
+        "MasterUserPassword": "abadpassword",
+        "ScalingConfiguration": {
+          "AutoPause": true,
+          "MaxCapacity": 8,
+          "MinCapacity": 2,
+          "SecondsUntilAutoPause": 600
+        },
+        "StorageEncrypted": true,
+        "VpcSecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "PostgresSgA0699C41",
+              "GroupId"
+            ]
+          }
+        ]
+      },
+      "UpdateReplacePolicy": "Snapshot"
     }
   },
   "Outputs": {
@@ -410,6 +480,17 @@
       },
       "Export": {
         "Name": "ecsCluster1:ExportsOutputRefPygridVPCA12AD5FB951EAF47"
+      }
+    },
+    "ExportsOutputFnGetAttPyGridSQLCluster789ACA39EndpointAddressDD624560": {
+      "Value": {
+        "Fn::GetAtt": [
+          "PyGridSQLCluster789ACA39",
+          "Endpoint.Address"
+        ]
+      },
+      "Export": {
+        "Name": "ecsCluster1:ExportsOutputFnGetAttPyGridSQLCluster789ACA39EndpointAddressDD624560"
       }
     },
     "ExportsOutputRefPyGridCluster7B1034780F600999": {

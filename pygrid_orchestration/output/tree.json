@@ -541,6 +541,109 @@
               }
             }
           },
+          "PostgresSg": {
+            "id": "PostgresSg",
+            "path": "ecsCluster1/PostgresSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "ecsCluster1/PostgresSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "ecsCluster1/PostgresSg",
+                    "groupName": "PostgrestSg",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "securityGroupIngress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "ipProtocol": "tcp",
+                        "fromPort": 5432,
+                        "toPort": 5432,
+                        "description": "from 0.0.0.0/0:5432"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "PygridVPCA12AD5FB"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ParameterGroup": {
+            "id": "ParameterGroup",
+            "path": "ecsCluster1/ParameterGroup"
+          },
+          "PyGridSQLCluster": {
+            "id": "PyGridSQLCluster",
+            "path": "ecsCluster1/PyGridSQLCluster",
+            "children": {
+              "Subnets": {
+                "id": "Subnets",
+                "path": "ecsCluster1/PyGridSQLCluster/Subnets",
+                "children": {
+                  "Default": {
+                    "id": "Default",
+                    "path": "ecsCluster1/PyGridSQLCluster/Subnets/Default",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::RDS::DBSubnetGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "dbSubnetGroupDescription": "Subnets for PyGridSQLCluster database",
+                        "subnetIds": [
+                          {
+                            "Ref": "PygridVPCPrivateSubnet1Subnet0134B5B4"
+                          },
+                          {
+                            "Ref": "PygridVPCPrivateSubnet2Subnet5705EC30"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "ecsCluster1/PyGridSQLCluster/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::RDS::DBCluster",
+                  "aws:cdk:cloudformation:props": {
+                    "engine": "aurora-postgresql",
+                    "databaseName": "pygridDB",
+                    "dbClusterParameterGroupName": "default.aurora-postgresql10",
+                    "dbSubnetGroupName": {
+                      "Ref": "PyGridSQLClusterSubnetsE7CFCB43"
+                    },
+                    "engineMode": "serverless",
+                    "masterUsername": "pygridUser",
+                    "masterUserPassword": "abadpassword",
+                    "scalingConfiguration": {
+                      "autoPause": true,
+                      "minCapacity": 2,
+                      "maxCapacity": 8,
+                      "secondsUntilAutoPause": 600
+                    },
+                    "storageEncrypted": true,
+                    "vpcSecurityGroupIds": [
+                      {
+                        "Fn::GetAtt": [
+                          "PostgresSgA0699C41",
+                          "GroupId"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
           "Exports": {
             "id": "Exports",
             "path": "ecsCluster1/Exports",
@@ -556,6 +659,10 @@
               "Output{\"Ref\":\"PygridVPCA12AD5FB\"}": {
                 "id": "Output{\"Ref\":\"PygridVPCA12AD5FB\"}",
                 "path": "ecsCluster1/Exports/Output{\"Ref\":\"PygridVPCA12AD5FB\"}"
+              },
+              "Output{\"Fn::GetAtt\":[\"PyGridSQLCluster789ACA39\",\"Endpoint.Address\"]}": {
+                "id": "Output{\"Fn::GetAtt\":[\"PyGridSQLCluster789ACA39\",\"Endpoint.Address\"]}",
+                "path": "ecsCluster1/Exports/Output{\"Fn::GetAtt\":[\"PyGridSQLCluster789ACA39\",\"Endpoint.Address\"]}"
               },
               "Output{\"Ref\":\"PyGridCluster7B103478\"}": {
                 "id": "Output{\"Ref\":\"PyGridCluster7B103478\"}",
@@ -573,17 +680,17 @@
           }
         }
       },
-      "perceptron": {
-        "id": "perceptron",
-        "path": "perceptron",
+      "dataSetFive": {
+        "id": "dataSetFive",
+        "path": "dataSetFive",
         "children": {
           "PyGridLogGroup": {
             "id": "PyGridLogGroup",
-            "path": "perceptron/PyGridLogGroup",
+            "path": "dataSetFive/PyGridLogGroup",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "perceptron/PyGridLogGroup/Resource",
+                "path": "dataSetFive/PyGridLogGroup/Resource",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::Logs::LogGroup",
                   "aws:cdk:cloudformation:props": {
@@ -595,11 +702,11 @@
           },
           "PyGridLoadBalancer": {
             "id": "PyGridLoadBalancer",
-            "path": "perceptron/PyGridLoadBalancer",
+            "path": "dataSetFive/PyGridLoadBalancer",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "perceptron/PyGridLoadBalancer/Resource",
+                "path": "dataSetFive/PyGridLoadBalancer/Resource",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
                   "aws:cdk:cloudformation:props": {
@@ -628,11 +735,11 @@
               },
               "PublicListener": {
                 "id": "PublicListener",
-                "path": "perceptron/PyGridLoadBalancer/PublicListener",
+                "path": "dataSetFive/PyGridLoadBalancer/PublicListener",
                 "children": {
                   "Resource": {
                     "id": "Resource",
-                    "path": "perceptron/PyGridLoadBalancer/PublicListener/Resource",
+                    "path": "dataSetFive/PyGridLoadBalancer/PublicListener/Resource",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::Listener",
                       "aws:cdk:cloudformation:props": {
@@ -654,11 +761,11 @@
                   },
                   "ECSGroup": {
                     "id": "ECSGroup",
-                    "path": "perceptron/PyGridLoadBalancer/PublicListener/ECSGroup",
+                    "path": "dataSetFive/PyGridLoadBalancer/PublicListener/ECSGroup",
                     "children": {
                       "Resource": {
                         "id": "Resource",
-                        "path": "perceptron/PyGridLoadBalancer/PublicListener/ECSGroup/Resource",
+                        "path": "dataSetFive/PyGridLoadBalancer/PublicListener/ECSGroup/Resource",
                         "attributes": {
                           "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::TargetGroup",
                           "aws:cdk:cloudformation:props": {
@@ -681,19 +788,19 @@
           },
           "PyGridService": {
             "id": "PyGridService",
-            "path": "perceptron/PyGridService",
+            "path": "dataSetFive/PyGridService",
             "children": {
               "TaskDef": {
                 "id": "TaskDef",
-                "path": "perceptron/PyGridService/TaskDef",
+                "path": "dataSetFive/PyGridService/TaskDef",
                 "children": {
                   "TaskRole": {
                     "id": "TaskRole",
-                    "path": "perceptron/PyGridService/TaskDef/TaskRole",
+                    "path": "dataSetFive/PyGridService/TaskDef/TaskRole",
                     "children": {
                       "Resource": {
                         "id": "Resource",
-                        "path": "perceptron/PyGridService/TaskDef/TaskRole/Resource",
+                        "path": "dataSetFive/PyGridService/TaskDef/TaskRole/Resource",
                         "attributes": {
                           "aws:cdk:cloudformation:type": "AWS::IAM::Role",
                           "aws:cdk:cloudformation:props": {
@@ -716,14 +823,14 @@
                   },
                   "Resource": {
                     "id": "Resource",
-                    "path": "perceptron/PyGridService/TaskDef/Resource",
+                    "path": "dataSetFive/PyGridService/TaskDef/Resource",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::ECS::TaskDefinition",
                       "aws:cdk:cloudformation:props": {
                         "containerDefinitions": [
                           {
                             "essential": true,
-                            "image": "openmined/grid-node:production",
+                            "image": "mkenney1/artificien_pygrid:latest",
                             "name": "pygrid_node",
                             "portMappings": [
                               {
@@ -746,7 +853,7 @@
                             "environment": [
                               {
                                 "name": "NODE_ID",
-                                "value": "node0"
+                                "value": "datasetfive"
                               },
                               {
                                 "name": "ADDRESS",
@@ -758,7 +865,22 @@
                               },
                               {
                                 "name": "DATABASE_URL",
-                                "value": "sqlite:///databasenode.db"
+                                "value": {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      "postgresql://pygridUser:abadpassword@",
+                                      {
+                                        "Fn::ImportValue": "ecsCluster1:ExportsOutputFnGetAttPyGridSQLCluster789ACA39EndpointAddressDD624560"
+                                      },
+                                      ":5432/"
+                                    ]
+                                  ]
+                                }
+                              },
+                              {
+                                "name": "MASTER_NODE_URL",
+                                "value": "unknown"
                               }
                             ]
                           }
@@ -770,7 +892,7 @@
                             "Arn"
                           ]
                         },
-                        "family": "perceptronPyGridServiceTaskDef62864637",
+                        "family": "dataSetFivePyGridServiceTaskDef965EA167",
                         "memory": "2048",
                         "networkMode": "awsvpc",
                         "requiresCompatibilities": [
@@ -787,15 +909,15 @@
                   },
                   "pygrid_node": {
                     "id": "pygrid_node",
-                    "path": "perceptron/PyGridService/TaskDef/pygrid_node"
+                    "path": "dataSetFive/PyGridService/TaskDef/pygrid_node"
                   },
                   "ExecutionRole": {
                     "id": "ExecutionRole",
-                    "path": "perceptron/PyGridService/TaskDef/ExecutionRole",
+                    "path": "dataSetFive/PyGridService/TaskDef/ExecutionRole",
                     "children": {
                       "Resource": {
                         "id": "Resource",
-                        "path": "perceptron/PyGridService/TaskDef/ExecutionRole/Resource",
+                        "path": "dataSetFive/PyGridService/TaskDef/ExecutionRole/Resource",
                         "attributes": {
                           "aws:cdk:cloudformation:type": "AWS::IAM::Role",
                           "aws:cdk:cloudformation:props": {
@@ -816,11 +938,11 @@
                       },
                       "DefaultPolicy": {
                         "id": "DefaultPolicy",
-                        "path": "perceptron/PyGridService/TaskDef/ExecutionRole/DefaultPolicy",
+                        "path": "dataSetFive/PyGridService/TaskDef/ExecutionRole/DefaultPolicy",
                         "children": {
                           "Resource": {
                             "id": "Resource",
-                            "path": "perceptron/PyGridService/TaskDef/ExecutionRole/DefaultPolicy/Resource",
+                            "path": "dataSetFive/PyGridService/TaskDef/ExecutionRole/DefaultPolicy/Resource",
                             "attributes": {
                               "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
                               "aws:cdk:cloudformation:props": {
@@ -859,11 +981,11 @@
               },
               "Service": {
                 "id": "Service",
-                "path": "perceptron/PyGridService/Service",
+                "path": "dataSetFive/PyGridService/Service",
                 "children": {
                   "Service": {
                     "id": "Service",
-                    "path": "perceptron/PyGridService/Service/Service",
+                    "path": "dataSetFive/PyGridService/Service/Service",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::ECS::Service",
                       "aws:cdk:cloudformation:props": {
@@ -916,15 +1038,15 @@
                   },
                   "SecurityGroup": {
                     "id": "SecurityGroup",
-                    "path": "perceptron/PyGridService/Service/SecurityGroup",
+                    "path": "dataSetFive/PyGridService/Service/SecurityGroup",
                     "children": {
                       "Resource": {
                         "id": "Resource",
-                        "path": "perceptron/PyGridService/Service/SecurityGroup/Resource",
+                        "path": "dataSetFive/PyGridService/Service/SecurityGroup/Resource",
                         "attributes": {
                           "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
                           "aws:cdk:cloudformation:props": {
-                            "groupDescription": "perceptron/PyGridService/Service/SecurityGroup",
+                            "groupDescription": "dataSetFive/PyGridService/Service/SecurityGroup",
                             "securityGroupEgress": [
                               {
                                 "cidrIp": "0.0.0.0/0",
@@ -955,7 +1077,7 @@
           },
           "PyGridNodeLoadBalancerDNS": {
             "id": "PyGridNodeLoadBalancerDNS",
-            "path": "perceptron/PyGridNodeLoadBalancerDNS"
+            "path": "dataSetFive/PyGridNodeLoadBalancerDNS"
           }
         }
       }

@@ -1,39 +1,10 @@
-import json
-import os
-import shlex
-import subprocess
-from datetime import date
-
 import boto3
 import requests
-import syft as sy
-import torch as th
-import websockets
 import torch as th
 from boto3.dynamodb.conditions import Key
 from flask import Flask, jsonify, request
-from syft.execution.placeholder import PlaceHolder
-from syft.execution.state import State
-from syft.execution.translation import TranslationTarget
-from syft.frameworks.torch.hook import hook
-from syft.grid.clients.model_centric_fl_client import ModelCentricFLClient
-from syft.serde import protobuf
-from torch import nn
-
-import jsonpickle
-from jsonpickle.ext import numpy as jsonpickle_numpy
 from orchestration_helper import AppFactory
 from post_deploy_actions import get_outputs
-from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
-from syft_proto.execution.v1.state_pb2 import State as StatePB
-from websocket import create_connection
-
-
-jsonpickle_numpy.register_handlers()
-
-sy.make_hook(globals())
-hook.local_worker.framework = None  # force protobuf serialization for tensors
-th.random.manual_seed(1)
 
 app = Flask(__name__)
 region_name = "us-east-1"
@@ -94,8 +65,8 @@ def create_node():
 
         dataset_response['Items'][0]['nodeURL'] = nodeURL
         dataset_table.put_item(Item=dataset_response['Items'][0])
-
-        return jsonify({'status': 'ready'})
+        print(nodeURL)
+        return jsonify({'status': 'ready', 'nodeURL': nodeURL})
 
     # if node hasn't been loaded yet, first validate the user has access to data
     owner = model_response['Items'][0]['owner_name']
@@ -156,7 +127,7 @@ def model_progress():
 
 
 
-@app.route("/syft", methods=["POST"])
+@app.route("/info", methods=["POST"])
 def get_info():
     dataset_id = request.json.get('dataset_id')
     dataset_table = dynamodb.Table('dataset_table')
