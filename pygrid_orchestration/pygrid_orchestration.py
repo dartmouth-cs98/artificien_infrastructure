@@ -136,14 +136,16 @@ def get_info():
     try:
         dataset_response = dataset_table.query(KeyConditionExpression=Key('dataset_id').eq(dataset_id))
     except:
-        return jsonify({'error': 'failed to query dynamodb'}), 500
+        return jsonify({'error': 'failed to query dynamodb'}), 400
+    if dataset_response['Items'][0]['hasNode'] == False:
+        return jsonify({'error':'no node available'}), 400
 
     nodeURL = dataset_response['Items'][0]['nodeURL']
 
     try:
         model_response = model_table.query(KeyConditionExpression=Key('dataset').eq(dataset_id))
     except:
-        return jsonify({'error': 'failed to query dynamodb'}), 500
+        return jsonify({'error': 'failed to query dynamodb'}), 400
 
     models = model_response['Items']
     return jsonify({'models': models, 'nodeURL': nodeURL})
