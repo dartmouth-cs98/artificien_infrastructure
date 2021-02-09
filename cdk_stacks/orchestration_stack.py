@@ -1,5 +1,6 @@
 from aws_cdk import (
     core as cdk,
+    aws_iam as iam,
     aws_logs as logs,
     aws_ec2 as ec2,
     aws_ecs as ecs,
@@ -8,11 +9,19 @@ from aws_cdk import (
 )
 
 
-class PygridNodeStack(cdk.Stack):
+class OrchestrationStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc,
-                 cluster: ecs.Cluster, db_url: str, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, cluster: ecs.Cluster, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        lb = load_balancer.NetworkLoadBalancer(
+            self, 'PyGridLoadBalancer',
+            vpc=vpc,
+            internet_facing=True,
+            cross_zone_enabled=True
+        )
+
+        master_node_url = lb.load_balancer_dns_name + ':5001'
 
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
             self,
@@ -30,9 +39,12 @@ class PygridNodeStack(cdk.Stack):
 
             # Task image options
             task_image_options=ecs_patterns.NetworkLoadBalancedTaskImageOptions(
-                container_name='pygrid_node',
+                container_name='artificien_master_node',
                 container_port=5001,
-                image=ecs.ContainerImage.from_asset('../pygrid_orchestration'),
+                image=ecs.ContainerImage.from_asset('./pygrid_orchestration'),
+                environment={
+                    'MASTER_NODE_URL': lb.load_balancer_dns_name + ':5001'
+                },
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(
                     stream_prefix='MasterNode',
@@ -43,16 +55,17 @@ class PygridNodeStack(cdk.Stack):
                     )
                 )
             ),
-            load_balancer=load_balancer.NetworkLoadBalancer(
-                self, 'PyGridLoadBalancer',
-                vpc=vpc,
-                internet_facing=True,
-                cross_zone_enabled=True
-            )
+            load_balancer=lb
         )
 
         # Provide the task the ability to launch new resources
-        self.service.service.task_definition.task_role.add_managed_policy('AWSCloudFormationFullAccess')
+        self.service.service.task_definition.task_role.add_managed_policy(
+            iam.ManagedPolicy.from_aws_managed_policy_name('AWSCloudFormationFullAccess')
+        )
+        # Provide the task the ability to launch new resources
+        self.service.service.task_definition.task_role.add_managed_policy(
+            iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess')
+        )
 
         # Allow ingress
         all_ports = ec2.Port(
@@ -70,4 +83,4 @@ class PygridNodeStack(cdk.Stack):
         )
 
         # Get domain name of load balancer and output it to the console
-        cdk.CfnOutput(self, 'MasterNodeLoadBalancerDNS', value=self.service.load_balancer.load_balancer_dns_name)
+        cdk.CfnOutput(self, 'MasterNodeLoadBalancerDNS', value=master_node_url)

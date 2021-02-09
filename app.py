@@ -10,6 +10,7 @@ from cdk_stacks.pygrid_node_stack import PygridNodeStack
 from cdk_stacks.data_upload_lambda_stack import DataUploadLambda
 from cdk_stacks.model_retrieval_lambda_stack import ModelRetrievalLambda
 from cdk_stacks.ecs_cluster_stack import EcsClusterStack
+from cdk_stacks.orchestration_stack import OrchestrationStack
 
 ###########
 # Globals #
@@ -57,10 +58,11 @@ jupyter_stack = JupyterServiceStack(
 # Launch ECS cluster to host Pygrid in:
 ecs_cluster_stack = EcsClusterStack(
     app,
-    'ecsCluster1',
+    'ecsCluster',
     env=env
 )
 
+# Master Node will now handle deploying PyGrid stacks
 # Launch PyGrid itself
 pygrid_stack = PygridNodeStack(
     app,
@@ -68,6 +70,14 @@ pygrid_stack = PygridNodeStack(
     vpc=ecs_cluster_stack.vpc,
     cluster=ecs_cluster_stack.cluster,
     db_url=ecs_cluster_stack.db_url,
+    env=env
+)
+
+orchestration_stack = OrchestrationStack(
+    app,
+    'orchestrationNode',
+    vpc=ecs_cluster_stack.vpc,
+    cluster=ecs_cluster_stack.cluster,
     env=env
 )
 
@@ -88,6 +98,7 @@ model_retrieval_lambda = ModelRetrievalLambda(  # Retrieves models when they are
 
 # Configure Dependencies:
 pygrid_stack.add_dependency(ecs_cluster_stack)
+orchestration_stack.add_dependency(ecs_cluster_stack)
 data_upload_lambda.add_dependency(dynamo_db_stack)
 model_retrieval_lambda.add_dependency(dynamo_db_stack)
 model_retrieval_lambda.add_dependency(amplify_stack)

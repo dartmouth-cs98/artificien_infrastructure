@@ -11,7 +11,7 @@ from aws_cdk import (
 class PygridNodeStack(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc,
-                 cluster: ecs.Cluster, db_url: str, **kwargs) -> None:
+                 cluster: ecs.Cluster, db_url: str, master_node_url: str, **kwargs) -> None:
 
         super().__init__(scope, id, **kwargs)
 
@@ -39,7 +39,7 @@ class PygridNodeStack(cdk.Stack):
                     'ADDRESS': 'http://localhost:5000',
                     'PORT': '5000',
                     'DATABASE_URL': db_url,
-                    'MASTER_NODE_URL': 'unknown',
+                    'MASTER_NODE_URL': master_node_url,
                 },
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(
