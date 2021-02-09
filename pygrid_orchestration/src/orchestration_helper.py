@@ -34,18 +34,18 @@ class AppFactory:
 
     def launch_stack(self):
         for stack in self.generated.stacks:
-            if stack.name != 'ecsCluster1':
+            if stack.name != 'ecsCluster':
                 params = {
                     'StackName': stack.name,
                     'TemplateBody': str(stack.template),
                     'Parameters': [],
                     'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'],
                 }
-                response = client.create_stack(**params)
+                client.create_stack(**params)
 
     def delete_stack(self):
         for stack in self.generated.stacks:
-            response = client.delete_stack(StackName=stack.name)
+            client.delete_stack(StackName=stack.name)
             # print(response)
 
 

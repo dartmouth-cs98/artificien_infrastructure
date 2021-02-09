@@ -57,15 +57,8 @@ class OrchestrationStack(cdk.Stack):
             ),
             load_balancer=lb
         )
-
-        # Provide the task the ability to launch new resources
-        self.service.service.task_definition.task_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name('AWSCloudFormationFullAccess')
-        )
-        # Provide the task the ability to launch new resources
-        self.service.service.task_definition.task_role.add_managed_policy(
-            iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess')
-        )
+        # Add requisite IAM roles to deploy all of these resources
+        add_policies(self.service.service.task_definition.task_role)
 
         # Allow ingress
         all_ports = ec2.Port(
@@ -84,3 +77,14 @@ class OrchestrationStack(cdk.Stack):
 
         # Get domain name of load balancer and output it to the console
         cdk.CfnOutput(self, 'MasterNodeLoadBalancerDNS', value=master_node_url)
+
+
+def add_policies(role: iam.Role):
+    """ Adds the policies needed for the master node to deploy PyGrid nodes """
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AWSCloudFormationFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('IAMFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('ElasticLoadBalancingFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonECS_FullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('CloudWatchLogsFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonEC2FullAccess'))
