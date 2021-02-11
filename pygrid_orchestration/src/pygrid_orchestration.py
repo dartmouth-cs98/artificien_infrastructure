@@ -1,39 +1,10 @@
-import json
-import os
-import shlex
-import subprocess
-from datetime import date
-
 import boto3
 import requests
-import syft as sy
-import torch as th
-import websockets
 import torch as th
 from boto3.dynamodb.conditions import Key
 from flask import Flask, jsonify, request
-from syft.execution.placeholder import PlaceHolder
-from syft.execution.state import State
-from syft.execution.translation import TranslationTarget
-from syft.frameworks.torch.hook import hook
-from syft.grid.clients.model_centric_fl_client import ModelCentricFLClient
-from syft.serde import protobuf
-from torch import nn
-
-import jsonpickle
-from jsonpickle.ext import numpy as jsonpickle_numpy
-from orchestration_helper import AppFactory
-from post_deploy_actions import get_outputs
-from syft_proto.execution.v1.plan_pb2 import Plan as PlanPB
-from syft_proto.execution.v1.state_pb2 import State as StatePB
-from websocket import create_connection
-
-
-jsonpickle_numpy.register_handlers()
-
-sy.make_hook(globals())
-hook.local_worker.framework = None  # force protobuf serialization for tensors
-th.random.manual_seed(1)
+from .orchestration_helper import AppFactory
+from .cfn_helper import get_outputs
 
 app = Flask(__name__)
 region_name = "us-east-1"
@@ -94,8 +65,8 @@ def create_node():
 
         dataset_response['Items'][0]['nodeURL'] = nodeURL
         dataset_table.put_item(Item=dataset_response['Items'][0])
-
-        return jsonify({'status': 'ready'})
+        print(nodeURL)
+        return jsonify({'status': 'ready', 'nodeURL': nodeURL})
 
     # if node hasn't been loaded yet, first validate the user has access to data
     owner = model_response['Items'][0]['owner_name']
@@ -155,8 +126,7 @@ def model_progress():
     return jsonify({'status': 'model completion was updated successfully'})
 
 
-
-@app.route("/syft", methods=["POST"])
+@app.route("/info", methods=["POST"])
 def get_info():
     dataset_id = request.json.get('dataset_id')
     dataset_table = dynamodb.Table('dataset_table')
@@ -165,17 +135,20 @@ def get_info():
     try:
         dataset_response = dataset_table.query(KeyConditionExpression=Key('dataset_id').eq(dataset_id))
     except:
-        return jsonify({'error': 'failed to query dynamodb'}), 500
+        return jsonify({'error': 'failed to query dynamodb'}), 400
+    if not dataset_response['Items'][0]['hasNode']:
+        return jsonify({'error':'no node available'}), 400
 
-    nodeURL = dataset_response['Items'][0]['nodeURL']
+    node_url = dataset_response['Items'][0]['nodeURL']
 
     try:
         model_response = model_table.query(KeyConditionExpression=Key('dataset').eq(dataset_id))
     except:
-        return jsonify({'error': 'failed to query dynamodb'}), 500
+        return jsonify({'error': 'failed to query dynamodb'}), 400
 
     models = model_response['Items']
-    return jsonify({'models': models, 'nodeURL': nodeURL})
+    return jsonify({'models': models, 'nodeURL': node_url})
+
 
 def validate_user(model_id, owner):
     user_table = dynamodb.Table('user_table')
@@ -191,6 +164,7 @@ def validate_user(model_id, owner):
     if model_id in purchases:
         return True
     return False
+
 
 def retrieve(user, model_id, version, node_url):
 
@@ -230,7 +204,3 @@ def retrieve(user, model_id, version, node_url):
 
     if update_response:
         print("UPDATE success")
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)

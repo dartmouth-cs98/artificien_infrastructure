@@ -64,7 +64,6 @@ class EcsClusterStack(cdk.Stack):
             security_groups=[postgres_sg]
         )
 
-
         # Get the Access URL for the database
         self.db_url = 'postgresql://' + username + ':' + plaintext_pw + '@' + self.db.cluster_endpoint.hostname + \
                       ':' + str(postgres_port) + '/'
