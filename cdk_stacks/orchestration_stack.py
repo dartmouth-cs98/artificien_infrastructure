@@ -41,7 +41,7 @@ class OrchestrationStack(cdk.Stack):
             task_image_options=ecs_patterns.NetworkLoadBalancedTaskImageOptions(
                 container_name='artificien_master_node',
                 container_port=5001,
-                image=ecs.ContainerImage.from_asset('./pygrid_orchestration'),
+                image=ecs.ContainerImage.from_registry('mkenney1/artificien_orchestration:latest'),
                 environment={
                     'MASTER_NODE_URL': lb.load_balancer_dns_name + ':5001'
                 },
