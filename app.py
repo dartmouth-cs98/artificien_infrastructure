@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 from aws_cdk import core as cdk
-import aws_cdk.aws_iam as iam
-
 from cdk_stacks.dynamo_db_stack import DynamoDBStack
 from cdk_stacks.amplify_stack import AmplifyStack
 from cdk_stacks.cognito_stack import CognitoStack
 from cdk_stacks.jupyter_service_stack import JupyterServiceStack
 from cdk_stacks.data_upload_lambda_stack import DataUploadLambda
-from cdk_stacks.model_retrieval_lambda_stack import ModelRetrievalLambda
 from cdk_stacks.ecs_cluster_stack import EcsClusterStack
 from cdk_stacks.orchestration_stack import OrchestrationStack
 
@@ -78,18 +75,9 @@ data_upload_lambda = DataUploadLambda(  # Creates sample data for clients to tes
     env=env
 )
 
-model_retrieval_lambda = ModelRetrievalLambda(  # Retrieves models when they are finished training
-    app,
-    'modelRetreivalLambda',
-    iam_principals=[amplify_stack.amplify_role, dynamo_db_stack.db_user, iam.AccountRootPrincipal()],
-    env=env
-)
-
 # Configure Dependencies:
 orchestration_stack.add_dependency(ecs_cluster_stack)
 data_upload_lambda.add_dependency(dynamo_db_stack)
-model_retrieval_lambda.add_dependency(dynamo_db_stack)
-model_retrieval_lambda.add_dependency(amplify_stack)
 jupyter_stack.add_dependency(cognito_stack)
 
 # Synthesize CloudFormation Templates to create these cloud resources
