@@ -43,7 +43,8 @@ class OrchestrationStack(cdk.Stack):
                 container_port=5001,
                 image=ecs.ContainerImage.from_registry('mkenney1/artificien_orchestration:latest'),
                 environment={
-                    'MASTER_NODE_URL': lb.load_balancer_dns_name + ':5001'
+                    'MASTER_NODE_URL': lb.load_balancer_dns_name + ':5001',
+                    'LOCALTEST': 'False'
                 },
                 enable_logging=True,
                 log_driver=ecs.AwsLogDriver(
@@ -83,6 +84,7 @@ def add_policies(role: iam.Role):
     """ Adds the policies needed for the master node to deploy PyGrid nodes """
     role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AWSCloudFormationFullAccess'))
     role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonDynamoDBFullAccess'))
+    role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonS3FullAccess'))
     role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('IAMFullAccess'))
     role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('ElasticLoadBalancingFullAccess'))
     role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name('AmazonECS_FullAccess'))

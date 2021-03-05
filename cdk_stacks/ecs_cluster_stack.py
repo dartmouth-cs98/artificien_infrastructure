@@ -52,7 +52,7 @@ class EcsClusterStack(cdk.Stack):
             ),
             vpc=self.vpc,
             scaling=rds.ServerlessScalingOptions(
-                auto_pause=cdk.Duration.minutes(10),
+                auto_pause=cdk.Duration.minutes(300),
                 min_capacity=rds.AuroraCapacityUnit.ACU_2,
                 max_capacity=rds.AuroraCapacityUnit.ACU_8,  # we can increase the upper bound, if we require more I/O
             ),
