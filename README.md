@@ -57,9 +57,10 @@ User - represents an Artificien user account:
 - Tests. Our `tests` directory is out of date, but is left as a demonstration of the general means by which one should create unit and integreation tests for AWS CDK codebases. can be understood by
 
 ## Authors
-* Matt Kenney
-* Alex Quill
-* Jake Epstein
+* Matt Kenney - ECS services (Pygrid, Orchestration Node), Cognito, Amplify, Dynamo, Lambda, JupyterHub.
+* Alex Quill - worked extensively on Dynamo, as well as model retrieval and postConfirmation lambda.
+* Jake Epstein - worked on JupyterHub, Cognito-related items, and wrote all code for Orchestration Node (seperate respository).
+* Tobias Lange - wrote sample dataset lambda.
 
 ## Acknowledgments
 Special thanks to Professor Tim Tregubov for his guidance during our two-term COSC 098 course.
