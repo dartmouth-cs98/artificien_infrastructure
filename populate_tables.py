@@ -15,6 +15,7 @@ def get_table_attributes():
     db = DynamoDBStack(app, "artificien-infrastructure", env={'region': 'us-east-1'})
     return db.enterprise_table_name, db.user_table_name, db.app_table_name, db.model_table_name,  db.dataset_table_name, db.region
 
+# THIS HAS BEEN DEPRECATED AND IS IRRELEVANT. SEE README FOR DATABASE STRUCTURE
 
 # -------------------------------------------update_enterprise_table-------------------------------------------------
 
