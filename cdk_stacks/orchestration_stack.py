@@ -12,8 +12,14 @@ from aws_cdk import (
 class OrchestrationStack(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, cluster: ecs.Cluster, **kwargs) -> None:
+
+        """ 
+        Creates a Docker Container Based backend service which runs our Master Node service on
+        a public endpoint.
+        """
         super().__init__(scope, id, **kwargs)
 
+        # Create a load balancer so master node can be hit via a public endpoint
         lb = load_balancer.NetworkLoadBalancer(
             self, 'PyGridLoadBalancer',
             vpc=vpc,
@@ -22,7 +28,10 @@ class OrchestrationStack(cdk.Stack):
         )
 
         master_node_url = lb.load_balancer_dns_name + ':5001'
-
+        
+        # Pass in required environmental variables, define CPU/ memory resources, etc.
+        # Note that by setting the containerImage to mkenney1/artificien_orchestration:latest,
+        # we tell AWS to run the code contained in the contianer (published on DockerHub with this name).
         self.service = ecs_patterns.NetworkLoadBalancedFargateService(
             self,
             'MasterNodeService',
@@ -70,7 +79,7 @@ class OrchestrationStack(cdk.Stack):
         )
         self.service.service.connections.allow_from_any_ipv4(all_ports)
 
-        # Health Check
+        # Add a Health Check to allow us to monitor the service
         self.service.target_group.configure_health_check(
             port='traffic-port',
             protocol=load_balancer.Protocol.TCP
