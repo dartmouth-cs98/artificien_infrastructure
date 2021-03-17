@@ -113,16 +113,19 @@ class JupyterServiceStack(cdk.Stack):
                 # Get Fake Data
                 ###############
                 "sudo mkdir -p /srv/data/sample_data",
+                "sudo mkdir /srv/data/tutorials",
                 
-                # Use a cronjob to pull new sample data to the repository every 30 minutes
+                # Use a cronjob to pull new sample data and tutorials to the repository every 30 minutes
                 "sudo crontab -l > mycron",
-                "echo \'0,30 * * * * aws s3 cp s3://artificien-fake-dataset-storage/ /srv/data/sample_data --recursive\' >> mycron ",
+                "echo \'0,30 * * * * aws s3 cp s3://artificien-fake-dataset-storage /srv/data/sample_data --recursive\' >> mycron ",
+                "echo \'0,30 * * * * aws s3 cp s3://artificien-tutorials /srv/data/sample_data --recursive\' >> mycron ",
                 "sudo crontab mycron",
                 "rm mycron",
                 
                 # Create a symbolic link to the /etc/skel dir so that users of JupyterHub can access the sample data
                 "cd /etc/skel",
                 "sudo ln -s /srv/data/sample_data sample_data"
+		"sudo ln -s /srv/data/tutorials tutorials"
             )
 
             # create instance
