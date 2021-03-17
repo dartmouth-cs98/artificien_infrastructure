@@ -1,8 +1,6 @@
 # Artificien: Infrastructure
 This repo stores infrastructure and deployment code for the Artificien platform as a single source for deployment. Infrastructure includes a DynamoDB (NoSQL database) utilized by the Marketplace, the severless backend, mechanisms to distribute and train models remotely, and any other cloud resources which may be relevant to the product.
 
-## Database Structure
-
 ## Architecture
 - `Amplify`: Handles the deployment of the front end of the Artificien Website. Deploys a new copy every time a new commit is pushed to the master branch of our artificien_marketplace repostiory (continuous deploys). Amplify automatically integrates the frontend with its associated backed resources, such as our authentication mechanism, `Cognito`. View the code for our amplify resources [here](./cdk_stacks/amplify_stack.py).
 - `Cognito`: Handles authentication to the Artificien website and to our JupyterHub development environment. Provides an email-based confirmation service for new signups, and other authentication features. View the code for our cognito resources [here](./cdk_stacks/cognito_stack.py).
