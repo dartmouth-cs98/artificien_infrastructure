@@ -1,6 +1,16 @@
 # Artificien: Infrastructure
 This repo stores infrastructure and deployment code for the Artificien platform as a single source for deployment. Infrastructure includes a DynamoDB (NoSQL database) utilized by the Marketplace, the severless backend, mechanisms to distribute and train models remotely, and any other cloud resources which may be relevant to the product.
 
+## Database Structure
+
+There are three prodiction tables: user_table, model_table, and dataset_table
+
+### user_table
+
+### model_table
+
+### dataset_table
+
 ## Architecture
 - `Amplify`: Handles the deployment of the front end of the Artificien Website. Deploys a new copy every time a new commit is pushed to the master branch of our artificien_marketplace repostiory (continuous deploys). Amplify automatically integrates the frontend with its associated backed resources
 - `Cognito`: Handles authentication to both the website and the Artificien site. Provides an email-based confirmation service for new signups, and other authentication features
